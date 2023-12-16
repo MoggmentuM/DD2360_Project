@@ -1,3 +1,15 @@
+/**
+ * @file ex_particle_CUDA_float_seq.cu
+ * @author Valeria Grotto (vgrotto@kth.se), ...
+ * @brief Modified version for the course DD2360 - Applied GPU programming at KTH Royal Institute of Technology
+ * @version 0.1
+ * @date 2023-12-16
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
