@@ -1,7 +1,7 @@
 /**
- * @file ex_particle_CUDA_float_seq.cu
- * @author Valeria Grotto (vgrotto@kth.se), ...
- * @brief Modified version for the course DD2360 - Applied GPU programming at KTH Royal Institute of Technology
+ * @file ex_particle_cuRAND_float_seq.cu
+ * @author Valeria Grotto (vgrotto@kth.se)
+ * @brief Added random number generation with cuRAND API of the CUDA Toolkit
  * @version 0.1
  * @date 2023-12-16
  * 
