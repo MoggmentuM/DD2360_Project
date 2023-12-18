@@ -1,6 +1,6 @@
 /**
  * @file ex_particle_CUDA_naive_seq.cu
- * @author Valeria Grotto (vgrotto@kth.se)
+ * @author Valeria Grotto (vgrotto@kth.se), ...
  * @brief Modified version for the course DD2360 - Applied GPU programming at KTH Royal Institute of Technology
  * @version 0.1
  * @date 2023-12-16
@@ -18,6 +18,11 @@
 #include <fcntl.h>
 #include <float.h>
 #include <sys/time.h>
+
+// Added headers for the random number generation with cuRAND
+#include <curand_kernel.h>
+#include <curand.h>
+
 #define PI 3.1415926535897932
 #define BLOCK_X 16
 #define BLOCK_Y 16
@@ -555,11 +560,16 @@ void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparti
 		}
 		long long cum_sum = get_time();
 		printf("TIME TO CALC CUM SUM TOOK: %f\n", elapsed_time(move_time, cum_sum));
+
+		//TODO: optimize with cuda, streams and pinned memory --> each element of u is computed independently
+
 		double u1 = (1/((double)(Nparticles)))*randu(seed, 0);
 		for(x = 0; x < Nparticles; x++){
 			u[x] = u1 + x/((double)(Nparticles));
 		}
 		long long u_time = get_time();
+
+
 		printf("TIME TO CALC U TOOK: %f\n", elapsed_time(cum_sum, u_time));
 		long long start_copy = get_time();
 		//CUDA memory copying from CPU memory to GPU memory

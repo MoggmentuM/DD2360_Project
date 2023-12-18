@@ -19,6 +19,11 @@
 #include <fcntl.h>
 #include <float.h>
 #include <sys/time.h>
+
+// Added headers for the random number generation with cuRAND
+#include <curand_kernel.h>
+#include <curand.h>
+
 #define BLOCK_X 16
 #define BLOCK_Y 16
 #define PI 3.1415926535897932
@@ -341,11 +346,15 @@ __global__ void sum_kernel(double* partial_sums, int Nparticles) {
  * param10: k
  * param11: IszY
  * param12: Nfr
+ * param13: states -> state to generate random numbers with cuRAND
  *****************************/
-__global__ void likelihood_kernel(double * arrayX, double * arrayY, double * xj, double * yj, double * CDF, int * ind, int * objxy, double * likelihood, unsigned char * I, double * u, double * weights, int Nparticles, int countOnes, int max_size, int k, int IszY, int Nfr, int *seed, double* partial_sums) {
+__global__ void likelihood_kernel(double * arrayX, double * arrayY, double * xj, double * yj, double * CDF, int * ind, int * objxy, double * likelihood, unsigned char * I, double * u, double * weights, int Nparticles, int countOnes, int max_size, int k, int IszY, int Nfr, int *seed, double* partial_sums, curandState *states) {
     int block_id = blockIdx.x;
     int i = blockDim.x * block_id + threadIdx.x;
     int y;
+    
+    int rdn_seed = i; // different seed per thread
+    curand_init(rdn_seed, i, 0, &states[i]);  // 	Initialize CURAND
     
     int indX, indY; 
     __shared__ double buffer[512];
@@ -355,9 +364,13 @@ __global__ void likelihood_kernel(double * arrayX, double * arrayY, double * xj,
 
         weights[i] = 1 / ((double) (Nparticles)); //Donnie - moved this line from end of find_index_kernel to prevent all weights from being reset before calculating position on final iteration.
 
-        arrayX[i] = arrayX[i] + 1.0 + 5.0 * d_randn(seed, i);
-        arrayY[i] = arrayY[i] - 2.0 + 2.0 * d_randn(seed, i);
-        
+        // arrayX[i] = arrayX[i] + 1.0 + 5.0 * d_randn(seed, i);
+        // arrayY[i] = arrayY[i] - 2.0 + 2.0 * d_randn(seed, i);
+
+        // generate random numbers with cuRAND
+        arrayX[i] = arrayX[i] + 1.0 + 5.0 * curand_uniform(&states[i]);
+        arrayY[i] = arrayY[i] - 2.0 + 2.0 * curand_uniform(&states[i]);
+
     }
 
     __syncthreads();
@@ -739,9 +752,13 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
     int num_blocks = ceil((double) Nparticles / (double) threads_per_block);
 
 
+    // Allocate curandState for every CUDA thread on the host
+    curandState *dev_random;
+    cudaMalloc((void**)&dev_random, threads_per_block*num_blocks*sizeof(curandState));
+
     for (k = 1; k < Nfr; k++) {
         
-        likelihood_kernel << < num_blocks, threads_per_block >> > (arrayX_GPU, arrayY_GPU, xj_GPU, yj_GPU, CDF_GPU, ind_GPU, objxy_GPU, likelihood_GPU, I_GPU, u_GPU, weights_GPU, Nparticles, countOnes, max_size, k, IszY, Nfr, seed_GPU, partial_sums);
+        likelihood_kernel << < num_blocks, threads_per_block >> > (arrayX_GPU, arrayY_GPU, xj_GPU, yj_GPU, CDF_GPU, ind_GPU, objxy_GPU, likelihood_GPU, I_GPU, u_GPU, weights_GPU, Nparticles, countOnes, max_size, k, IszY, Nfr, seed_GPU, partial_sums, dev_random);
 
         sum_kernel << < num_blocks, threads_per_block >> > (partial_sums, Nparticles);
 
