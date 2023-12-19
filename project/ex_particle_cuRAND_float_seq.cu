@@ -367,9 +367,9 @@ __global__ void likelihood_kernel(double * arrayX, double * arrayY, double * xj,
         // arrayX[i] = arrayX[i] + 1.0 + 5.0 * d_randn(seed, i);
         // arrayY[i] = arrayY[i] - 2.0 + 2.0 * d_randn(seed, i);
 
-        // generate random numbers with cuRAND
-        arrayX[i] = arrayX[i] + 1.0 + 5.0 * curand_uniform(&states[i]);
-        arrayY[i] = arrayY[i] - 2.0 + 2.0 * curand_uniform(&states[i]);
+        // generate random numbers with cuRAND - normally distributed
+        arrayX[i] = arrayX[i] + 1.0 + 5.0 * curand_normal(&states[i]);
+        arrayY[i] = arrayY[i] - 2.0 + 2.0 * curand_normal(&states[i]);
 
     }
 
