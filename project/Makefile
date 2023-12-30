@@ -14,7 +14,7 @@ streams: ex_particle_streams_naive.cu
 #cuRAND: ex_particle_cuRAND_float_seq.cu
 #	$(CC) -I$(INCLUDE) -L$(CUDA_LIB_DIR) -lcuda -g -lm -O3 -use_fast_math -arch sm_75 ex_particle_cuRAND_float_seq.cu -o particlefilter_cuRAND
 
-streams_v2: ex_particle_streams_naive_v2.cu
+streams_v2: ex_particle_streams_naive_copy.cu
 	$(CC) -I$(INCLUDE) -L$(CUDA_LIB_DIR) -lcuda -g -lm -O3 -use_fast_math -arch sm_75 ex_particle_streams_naive_copy.cu -o particlefilter_streams_v2
 
 clean:
