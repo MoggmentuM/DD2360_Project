@@ -1,14 +1,8 @@
 /**
- * @file ex_particle_streams_naive.cu
- * @author Valeria Grotto (vgrotto@kth.se) 
- * @brief Modified the naive version of the code to support parallelism with pinned memory and CUDA streams.
- * @version 0.2
- * @date 2023-12-16
- * 
- * @copyright Copyright (c) 2023
- * DD2360 - Applied GPU programming at KTH
+ * @file ex_particle_naive_TBP.cu
+ * @author Michael Trotter & Matt Goodrum (Martin Forslund)
+ * @brief Particle filter implementation in C/OpenMP 
  */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,18 +12,9 @@
 #include <fcntl.h>
 #include <float.h>
 #include <sys/time.h>
-
-// Added headers for the random number generation with cuRAND
-#include <curand_kernel.h>
-#include <curand.h>
-
 #define PI 3.1415926535897932
 #define BLOCK_X 16
 #define BLOCK_Y 16
-
-// number of streams
-#define N_STREAMS 4
-#define SEGMENT_SIZE 64
 
 /**
 @var M value for Linear Congruential Generator (LCG); use GCC's value
@@ -123,25 +108,25 @@ __device__ int findIndexBin(double * CDF, int beginIndex, int endIndex, double v
 * param4: u
 * param5: xj
 * param6: yj
-* param7: Nparticles --> now segment size
+* param7: Nparticles
 *****************************/
-__global__ void kernel(double * arrayX, double * arrayY, double * CDF, double * u, double * xj, double * yj, int segment_size){
+__global__ void kernel(double * arrayX, double * arrayY, double * CDF, double * u, double * xj, double * yj, int Nparticles){
 	int block_id = blockIdx.x;// + gridDim.x * blockIdx.y;
 	int i = blockDim.x * block_id + threadIdx.x;
 	
-	if(i < segment_size){
+	if(i < Nparticles){
 	
 		int index = -1;
 		int x;
 		
-		for(x = 0; x < segment_size; x++){
+		for(x = 0; x < Nparticles; x++){
 			if(CDF[x] >= u[i]){
 				index = x;
 				break;
 			}
 		}
 		if(index == -1){
-			index = segment_size-1;
+			index = Nparticles-1;
 		}
 		
 		xj[i] = arrayX[index];
@@ -461,28 +446,25 @@ void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparti
 	double * yj = (double *)malloc(sizeof(double)*Nparticles);
 	double * CDF = (double *)malloc(sizeof(double)*Nparticles);
 	
-	//GPU copies of arrays --> modified to allow CUDA streams
-	double * arrayX_GPU[N_STREAMS];
-	double * arrayY_GPU[N_STREAMS];
-	double * xj_GPU[N_STREAMS];
-	double * yj_GPU[N_STREAMS];
-	double * CDF_GPU[N_STREAMS];
+	//GPU copies of arrays
+	double * arrayX_GPU;
+	double * arrayY_GPU;
+	double * xj_GPU;
+	double * yj_GPU;
+	double * CDF_GPU;
 	
 	int * ind = (int*)malloc(sizeof(int)*countOnes);
 	double * u = (double *)malloc(sizeof(double)*Nparticles);
-	double * u_GPU[N_STREAMS];
+	double * u_GPU;
 	
-	//CUDA memory allocation --> changed to pinned memory
-	for (int i = 0; i < N_STREAMS; ++i) {
-			// Allocate pinned memory
-			check_error(cudaHostAlloc((void**)&arrayX_GPU[i], sizeof(double)*Nparticles, cudaHostAllocDefault));  
-			check_error(cudaHostAlloc((void**)&arrayY_GPU[i], sizeof(double)*Nparticles, cudaHostAllocDefault));  
-			check_error(cudaHostAlloc((void**)&xj_GPU[i], sizeof(double)*Nparticles, cudaHostAllocDefault));  
-			check_error(cudaHostAlloc((void**)&yj_GPU[i], sizeof(double)*Nparticles, cudaHostAllocDefault)); 
-			check_error(cudaHostAlloc((void**)&CDF_GPU[i], sizeof(double)*Nparticles, cudaHostAllocDefault)); 
-			check_error(cudaHostAlloc((void**)&u_GPU[i], sizeof(double)*Nparticles, cudaHostAllocDefault));  
-	}
-
+	//CUDA memory allocation
+	check_error(cudaMalloc((void **) &arrayX_GPU, sizeof(double)*Nparticles));
+	check_error(cudaMalloc((void **) &arrayY_GPU, sizeof(double)*Nparticles));
+	check_error(cudaMalloc((void **) &xj_GPU, sizeof(double)*Nparticles));
+	check_error(cudaMalloc((void **) &yj_GPU, sizeof(double)*Nparticles));
+	check_error(cudaMalloc((void **) &CDF_GPU, sizeof(double)*Nparticles));
+	check_error(cudaMalloc((void **) &u_GPU, sizeof(double)*Nparticles));
+	
 	for(x = 0; x < Nparticles; x++){
 		arrayX[x] = xe;
 		arrayY[x] = ye;
@@ -567,69 +549,31 @@ void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparti
 		}
 		long long cum_sum = get_time();
 		printf("TIME TO CALC CUM SUM TOOK: %f\n", elapsed_time(move_time, cum_sum));
-
-		//TODO: optimize with cuda, streams and pinned memory --> each element of u is computed independently
-
 		double u1 = (1/((double)(Nparticles)))*randu(seed, 0);
 		for(x = 0; x < Nparticles; x++){
 			u[x] = u1 + x/((double)(Nparticles));
 		}
 		long long u_time = get_time();
-
-
 		printf("TIME TO CALC U TOOK: %f\n", elapsed_time(cum_sum, u_time));
 		long long start_copy = get_time();
 		//CUDA memory copying from CPU memory to GPU memory
-		// cudaMemcpy(arrayX_GPU, arrayX, sizeof(double)*Nparticles, cudaMemcpyHostToDevice);
-		// cudaMemcpy(arrayY_GPU, arrayY, sizeof(double)*Nparticles, cudaMemcpyHostToDevice);
-		// cudaMemcpy(xj_GPU, xj, sizeof(double)*Nparticles, cudaMemcpyHostToDevice);
-		// cudaMemcpy(yj_GPU, yj, sizeof(double)*Nparticles, cudaMemcpyHostToDevice);
-		// cudaMemcpy(CDF_GPU, CDF, sizeof(double)*Nparticles, cudaMemcpyHostToDevice);
-		// cudaMemcpy(u_GPU, u, sizeof(double)*Nparticles, cudaMemcpyHostToDevice);
-
-		// create streams and async copy to GPU
-		cudaStream_t streams[N_STREAMS];
-		for (int i = 0; i < N_STREAMS; i++) {
-				cudaStreamCreate(&streams[i]);
-				cudaMemcpyAsync(arrayX_GPU[i], arrayX + i * SEGMENT_SIZE, sizeof(double)*Nparticles, cudaMemcpyHostToDevice, streams[i]);
-				cudaMemcpyAsync(arrayY_GPU[i], arrayY + i * SEGMENT_SIZE, sizeof(double)*Nparticles, cudaMemcpyHostToDevice, streams[i]);
-				cudaMemcpyAsync(xj_GPU[i], xj + i * SEGMENT_SIZE, sizeof(double)*Nparticles, cudaMemcpyHostToDevice, streams[i]);
-				cudaMemcpyAsync(yj_GPU[i], yj + i * SEGMENT_SIZE, sizeof(double)*Nparticles, cudaMemcpyHostToDevice, streams[i]);
-				cudaMemcpyAsync(CDF_GPU[i], CDF + i * SEGMENT_SIZE, sizeof(double)*Nparticles, cudaMemcpyHostToDevice, streams[i]);
-				cudaMemcpyAsync(u_GPU[i], u + i * SEGMENT_SIZE, sizeof(double)*Nparticles, cudaMemcpyHostToDevice, streams[i]);
-		}
-	
+		cudaMemcpy(arrayX_GPU, arrayX, sizeof(double)*Nparticles, cudaMemcpyHostToDevice);
+		cudaMemcpy(arrayY_GPU, arrayY, sizeof(double)*Nparticles, cudaMemcpyHostToDevice);
+		cudaMemcpy(xj_GPU, xj, sizeof(double)*Nparticles, cudaMemcpyHostToDevice);
+		cudaMemcpy(yj_GPU, yj, sizeof(double)*Nparticles, cudaMemcpyHostToDevice);
+		cudaMemcpy(CDF_GPU, CDF, sizeof(double)*Nparticles, cudaMemcpyHostToDevice);
+		cudaMemcpy(u_GPU, u, sizeof(double)*Nparticles, cudaMemcpyHostToDevice);
 		long long end_copy = get_time();
 		//Set number of threads
 		int num_blocks = ceil((double) Nparticles/(double) threads_per_block);
 		
 		//KERNEL FUNCTION CALL
-		for (int i = 0; i < N_STREAMS; i++) {
-			kernel <<< num_blocks, threads_per_block, 0, streams[i] >>> (arrayX_GPU[i], arrayY_GPU[i], CDF_GPU[i], u_GPU[i], xj_GPU[i], yj_GPU[i], SEGMENT_SIZE);
-      //cudaThreadSynchronize();
-		}
-
-		// //synchronize streams
-		// for(int i = 0; i < N_STREAMS; i++) {
-		// 	cudaStreamSynchronize(streams[i])
-		// }
-
-		long long start_copy_back = get_time();
+		kernel <<< num_blocks, threads_per_block >>> (arrayX_GPU, arrayY_GPU, CDF_GPU, u_GPU, xj_GPU, yj_GPU, Nparticles);
+                cudaThreadSynchronize();
+                long long start_copy_back = get_time();
 		//CUDA memory copying back from GPU to CPU memory
-		// cudaMemcpy(yj, yj_GPU, sizeof(double)*Nparticles, cudaMemcpyDeviceToHost);
-		// cudaMemcpy(xj, xj_GPU, sizeof(double)*Nparticles, cudaMemcpyDeviceToHost);
-
-		// copy back
-		for (int i = 0; i < N_STREAMS; i++) {
-			cudaMemcpyAsync(yj + i * SEGMENT_SIZE, yj_GPU[i], sizeof(double)*Nparticles, cudaMemcpyDeviceToHost, streams[i]);
-			cudaMemcpyAsync(xj + i * SEGMENT_SIZE, xj_GPU[i], sizeof(double)*Nparticles, cudaMemcpyDeviceToHost, streams[i]);
-    }
-
-		for (int i = 0; i < N_STREAMS; i++) {
-			cudaStreamSynchronize(streams[i]);
-			cudaStreamDestroy(streams[i]);
-    }
-
+		cudaMemcpy(yj, yj_GPU, sizeof(double)*Nparticles, cudaMemcpyDeviceToHost);
+		cudaMemcpy(xj, xj_GPU, sizeof(double)*Nparticles, cudaMemcpyDeviceToHost);
 		long long end_copy_back = get_time();
 		printf("SENDING TO GPU TOOK: %lf\n", elapsed_time(start_copy, end_copy));
 		printf("CUDA EXEC TOOK: %lf\n", elapsed_time(end_copy, start_copy_back));
@@ -645,26 +589,15 @@ void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparti
 		}
 		long long reset = get_time();
 		printf("TIME TO RESET WEIGHTS TOOK: %f\n", elapsed_time(xyj_time, reset));
-		printf("check error: %f\n",k);
 	}
 	
 	//CUDA freeing of memory
-	// cudaFree(u_GPU);
-	// cudaFree(CDF_GPU);
-	// cudaFree(yj_GPU);
-	// cudaFree(xj_GPU);
-	// cudaFree(arrayY_GPU);
-	// cudaFree(arrayX_GPU);
-
-	// Free pinned memory
-	for (int i = 0; i < N_STREAMS; i++) {
-			cudaFreeHost(u_GPU[i]);  
-			cudaFreeHost(CDF_GPU[i]);
-			cudaFreeHost(yj_GPU[i]);
-			cudaFreeHost(xj_GPU[i]);
-			cudaFreeHost(arrayY_GPU[i]);
-			cudaFreeHost(arrayX_GPU[i]);
-	}
+	cudaFree(u_GPU);
+	cudaFree(CDF_GPU);
+	cudaFree(yj_GPU);
+	cudaFree(xj_GPU);
+	cudaFree(arrayY_GPU);
+	cudaFree(arrayX_GPU);
 	
 	//free memory
 	free(disk);
