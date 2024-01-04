@@ -28,7 +28,7 @@
 #define BLOCK_Y 16
 
 // number of streams
-#define N_STREAMS 16
+//#define N_STREAMS 16
 //#define SEGMENT_SIZE 64
 
 /**
@@ -424,7 +424,7 @@ int findIndex(double * CDF, int lengthCDF, double value){
 * @param seed The seed array used for random number generation
 * @param Nparticles The number of particles to be used
 */
-void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparticles){
+void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparticles,int Nstream){
 	int max_size = IszX*IszY*Nfr;
 	long long start = get_time();
 	//original particle centroid
@@ -688,18 +688,18 @@ int main(int argc, char * argv[]){
 	
 	char* usage = "naive.out -x <dimX> -y <dimY> -z <Nfr> -np <Nparticles>";
 	//check number of arguments
-	if(argc != 9)
+	if(argc != 11)
 	{
 		printf("%s\n", usage);
 		return 0;
 	}
 	//check args deliminators
-	if( strcmp( argv[1], "-x" ) ||  strcmp( argv[3], "-y" ) || strcmp( argv[5], "-z" ) || strcmp( argv[7], "-np" ) ) {
+	if( strcmp( argv[1], "-x" ) ||  strcmp( argv[3], "-y" ) || strcmp( argv[5], "-z" ) || strcmp( argv[7], "-np" ) || strcmp( argv[9], "-nstream" )) {
 		printf( "%s\n",usage );
 		return 0;
 	}
 	
-	int IszX, IszY, Nfr, Nparticles;
+	int IszX, IszY, Nfr, Nparticles,Nstream;
 	
 	//converting a string to a integer
 	if( sscanf( argv[2], "%d", &IszX ) == EOF ) {
@@ -744,6 +744,15 @@ int main(int argc, char * argv[]){
 		printf("Number of particles must be > 0\n");
 		return 0;
 	}
+	if( sscanf( argv[10], "%d", &Nstream) == EOF ) {
+		printf("ERROR: Number of stream is incorrect");
+		return 0;
+	 }
+	 
+	 if( Nstream <= 0 ) {
+		 printf("Number of stream must be > 0\n");
+		 return 0;
+	 }
 	//establish seed
 	int * seed = (int *)malloc(sizeof(int)*Nparticles);
 	int i;
@@ -757,7 +766,7 @@ int main(int argc, char * argv[]){
 	long long endVideoSequence = get_time();
 	printf("VIDEO SEQUENCE TOOK %f\n", elapsed_time(start, endVideoSequence));
 	//call particle filter
-	particleFilter(I, IszX, IszY, Nfr, seed, Nparticles);
+	particleFilter(I, IszX, IszY, Nfr, seed, Nparticles,Nstream);
 	long long endParticleFilter = get_time();
 	printf("PARTICLE FILTER TOOK %f\n", elapsed_time(endVideoSequence, endParticleFilter));
 	printf("ENTIRE PROGRAM TOOK %f\n", elapsed_time(start, endParticleFilter));
