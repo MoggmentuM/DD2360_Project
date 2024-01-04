@@ -125,7 +125,7 @@ __device__ int findIndexBin(double * CDF, int beginIndex, int endIndex, double v
 * param6: yj
 * param7: Nparticles --> now segment size
 *****************************/
-__global__ void kernel(double * arrayX, double * arrayY, double * CDF, double * u, double * xj, double * yj, int segment_size,int offset，int Nparticles){
+__global__ void kernel(double * arrayX, double * arrayY, double * CDF, double * u, double * xj, double * yj, int segment_size,int offset, int Nparticles){
 	int block_id = blockIdx.x;// + gridDim.x * blockIdx.y;
 	int i = blockDim.x * block_id + threadIdx.x + offset;
 	
