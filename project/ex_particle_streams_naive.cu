@@ -1,8 +1,8 @@
 /**
  * @file ex_particle_streams_naive.cu
- * @author Valeria Grotto (vgrotto@kth.se)
+ * @author Valeria Grotto (vgrotto@kth.se) Martin Forslund (uz6@kth.se)
  * @brief Modified the naive version of the code to support parallelism with pinned memory and CUDA streams.
- * @version 0.1
+ * @version 0.2
  * @date 2023-12-16
  * 
  * @copyright Copyright (c) 2023
@@ -44,7 +44,7 @@ int A = 1103515245;
 */
 int C = 12345;
 
-const int threads_per_block = 256;
+const int threads_per_block = 128;
 
 /*****************************
 *GET_TIME
