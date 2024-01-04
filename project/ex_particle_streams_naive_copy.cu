@@ -125,7 +125,7 @@ __device__ int findIndexBin(double * CDF, int beginIndex, int endIndex, double v
 * param6: yj
 * param7: Nparticles --> now segment size
 *****************************/
-__global__ void kernel(double * arrayX, double * arrayY, double * CDF, double * u, double * xj, double * yj, int segment_size,int offset){
+__global__ void kernel(double * arrayX, double * arrayY, double * CDF, double * u, double * xj, double * yj, int segment_size,int offset，int Nparticles){
 	int block_id = blockIdx.x;// + gridDim.x * blockIdx.y;
 	int i = blockDim.x * block_id + threadIdx.x + offset;
 	
@@ -625,7 +625,7 @@ void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparti
 			cudaMemcpyAsync(&CDF_GPU[offset], &CDF[offset], sizeof(double)*SEGMENT_SIZE, cudaMemcpyHostToDevice, streams[i]);
 			cudaMemcpyAsync(&u_GPU[offset],  &u[offset], sizeof(double)*SEGMENT_SIZE, cudaMemcpyHostToDevice, streams[i]);
 
-			kernel <<< num_blocks, threads_per_block, 0, streams[i] >>> (arrayX_GPU, arrayY_GPU, CDF_GPU, u_GPU, xj_GPU, yj_GPU, SEGMENT_SIZE,offset);
+			kernel <<< num_blocks, threads_per_block, 0, streams[i] >>> (arrayX_GPU, arrayY_GPU, CDF_GPU, u_GPU, xj_GPU, yj_GPU, SEGMENT_SIZE,offset,Nparticles);
 
 			cudaMemcpyAsync(&yj[offset], &yj_GPU[offset], sizeof(double)*SEGMENT_SIZE, cudaMemcpyDeviceToHost, streams[i]);
 			cudaMemcpyAsync(&xj[offset], &xj_GPU[offset], sizeof(double)*SEGMENT_SIZE, cudaMemcpyDeviceToHost, streams[i]);
