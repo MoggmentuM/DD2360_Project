@@ -645,6 +645,7 @@ void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparti
 		}
 		long long reset = get_time();
 		printf("TIME TO RESET WEIGHTS TOOK: %f\n", elapsed_time(xyj_time, reset));
+		printf("check error: %f\n",k);
 	}
 	
 	//CUDA freeing of memory
