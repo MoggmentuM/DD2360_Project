@@ -674,25 +674,25 @@ void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparti
 
 	// Free pinned memory
 	
-	cudaFreeHost(u_GPU);  
-	cudaFreeHost(CDF_GPU);
-	cudaFreeHost(yj_GPU);
-	cudaFreeHost(xj_GPU);
-	cudaFreeHost(arrayY_GPU);
-	cudaFreeHost(arrayX_GPU);
+	cudaFreeHost(u);  
+	cudaFreeHost(CDF);
+	cudaFreeHost(yj);
+	cudaFreeHost(xj);
+	cudaFreeHost(arrayY);
+	cudaFreeHost(arrayX);
 	
+	cudaFree(u_GPU);
+	cudaFree(CDF_GPU);
+	cudaFree(yj_GPU);
+	cudaFree(xj_GPU);
+	cudaFree(arrayY_GPU);
+	cudaFree(arrayX_GPU);
 	
 	//free memory
 	free(disk);
 	free(objxy);
 	free(weights);
 	free(likelihood);
-	free(arrayX);
-	free(arrayY);
-	free(xj);
-	free(yj);
-	free(CDF);
-	free(u);
 	free(ind);
 }
 int main(int argc, char * argv[]){
