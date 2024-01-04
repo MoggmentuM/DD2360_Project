@@ -1,6 +1,6 @@
 /**
- * @file ex_particle_OPENMP_seq.c
- * @author Michael Trotter & Matt Goodrum
+ * @file ex_particle_naive_TBP.cu
+ * @author Michael Trotter & Matt Goodrum (Martin Forslund)
  * @brief Particle filter implementation in C/OpenMP 
  */
 #include <stdio.h>
