@@ -481,18 +481,19 @@ void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparti
 	double * CDF_GPU;
 
 	int * ind = (int*)malloc(sizeof(int)*countOnes);
-	double * u = (double *)malloc(sizeof(double)*Nparticles);
-	double * u_GPU[N_STREAMS];
+	cudaHostAlloc(&u, Nparticles * sizeof(double),cudaHostAllocDefault);
+	//double * u = (double *)malloc(sizeof(double)*Nparticles);
+	double * u_GPU;
 	
 	//CUDA memory allocation 
 	//for (int i = 0; i < N_STREAMS; ++i) {
 			// Allocate pinned memory
-	check_error(cudaMalloc((void *) &arrayX_GPU, sizeof(double)*Nparticles));
-	check_error(cudaMalloc((void *) &arrayY_GPU, sizeof(double)*Nparticles));
-	check_error(cudaMalloc((void *) &xj_GPU, sizeof(double)*Nparticles));
-	check_error(cudaMalloc((void *) &yj_GPU, sizeof(double)*Nparticles));
-	check_error(cudaMalloc((void *) &CDF_GPU, sizeof(double)*Nparticles));
-	check_error(cudaMalloc((void *) &u_GPU, sizeof(double)*Nparticles)); 
+	check_error(cudaMalloc((void **) &arrayX_GPU, sizeof(double)*Nparticles));
+	check_error(cudaMalloc((void **) &arrayY_GPU, sizeof(double)*Nparticles));
+	check_error(cudaMalloc((void **) &xj_GPU, sizeof(double)*Nparticles));
+	check_error(cudaMalloc((void **) &yj_GPU, sizeof(double)*Nparticles));
+	check_error(cudaMalloc((void **) &CDF_GPU, sizeof(double)*Nparticles));
+	check_error(cudaMalloc((void **) &u_GPU, sizeof(double)*Nparticles)); 
 	//}
 
 	for(x = 0; x < Nparticles; x++){
