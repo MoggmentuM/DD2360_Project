@@ -673,14 +673,14 @@ void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparti
 	// cudaFree(arrayX_GPU);
 
 	// Free pinned memory
-	
+	printf("check error");
 	cudaFreeHost(u);  
 	cudaFreeHost(CDF);
 	cudaFreeHost(yj);
 	cudaFreeHost(xj);
 	cudaFreeHost(arrayY);
 	cudaFreeHost(arrayX);
-	
+
 	cudaFree(u_GPU);
 	cudaFree(CDF_GPU);
 	cudaFree(yj_GPU);
