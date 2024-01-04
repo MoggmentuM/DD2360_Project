@@ -462,6 +462,11 @@ void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparti
 	// double * CDF = (double *)malloc(sizeof(double)*Nparticles);
 	//change CPU memory to pined memory
 	//cudaHostAlloc(&likelihood, Nparticles * sizeof(double),cudaHostAllocDefault);
+	double * arrayX 
+	double * arrayY 
+	double * xj 
+	double * yj 
+	double * CDF
 	cudaHostAlloc(&arrayX, Nparticles * sizeof(double),cudaHostAllocDefault);
 	cudaHostAlloc(&arrayY, Nparticles * sizeof(double),cudaHostAllocDefault);
 	cudaHostAlloc(&xj, Nparticles * sizeof(double),cudaHostAllocDefault);
@@ -482,12 +487,12 @@ void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparti
 	//CUDA memory allocation 
 	//for (int i = 0; i < N_STREAMS; ++i) {
 			// Allocate pinned memory
-	check_error(cudaMalloc((void **) &arrayX_GPU, sizeof(double)*Nparticles));
-	check_error(cudaMalloc((void **) &arrayY_GPU, sizeof(double)*Nparticles));
-	check_error(cudaMalloc((void **) &xj_GPU, sizeof(double)*Nparticles));
-	check_error(cudaMalloc((void **) &yj_GPU, sizeof(double)*Nparticles));
-	check_error(cudaMalloc((void **) &CDF_GPU, sizeof(double)*Nparticles));
-	check_error(cudaMalloc((void **) &u_GPU, sizeof(double)*Nparticles)); 
+	check_error(cudaMalloc(&arrayX_GPU, sizeof(double)*Nparticles));
+	check_error(cudaMalloc(&arrayY_GPU, sizeof(double)*Nparticles));
+	check_error(cudaMalloc(&xj_GPU, sizeof(double)*Nparticles));
+	check_error(cudaMalloc(&yj_GPU, sizeof(double)*Nparticles));
+	check_error(cudaMalloc(&CDF_GPU, sizeof(double)*Nparticles));
+	check_error(cudaMalloc(&u_GPU, sizeof(double)*Nparticles)); 
 	//}
 
 	for(x = 0; x < Nparticles; x++){
@@ -615,7 +620,7 @@ void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparti
 		
 		//KERNEL FUNCTION CALL
 		//for (int i = 0; i < N_STREAMS; i++) {
-			kernel <<< num_blocks, threads_per_block, 0, streams[i] >>> (arrayX_GPU[i], arrayY_GPU[i], CDF_GPU[i], u_GPU[i], xj_GPU[i], yj_GPU[i], SEGMENT_SIZE);
+			kernel <<< num_blocks, threads_per_block, 0, streams[i] >>> (arrayX_GPU, arrayY_GPU, CDF_GPU, u_GPU, xj_GPU, yj_GPU, SEGMENT_SIZE,offset);
       //cudaThreadSynchronize();
 		//}
 
