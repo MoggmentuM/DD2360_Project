@@ -487,12 +487,12 @@ void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparti
 	//CUDA memory allocation 
 	//for (int i = 0; i < N_STREAMS; ++i) {
 			// Allocate pinned memory
-	check_error(cudaMalloc(&arrayX_GPU, sizeof(double)*Nparticles));
-	check_error(cudaMalloc(&arrayY_GPU, sizeof(double)*Nparticles));
-	check_error(cudaMalloc(&xj_GPU, sizeof(double)*Nparticles));
-	check_error(cudaMalloc(&yj_GPU, sizeof(double)*Nparticles));
-	check_error(cudaMalloc(&CDF_GPU, sizeof(double)*Nparticles));
-	check_error(cudaMalloc(&u_GPU, sizeof(double)*Nparticles)); 
+	check_error(cudaMalloc((void *)&arrayX_GPU, sizeof(double)*Nparticles));
+	check_error(cudaMalloc((void *)&arrayY_GPU, sizeof(double)*Nparticles));
+	check_error(cudaMalloc((void *)&xj_GPU, sizeof(double)*Nparticles));
+	check_error(cudaMalloc((void *)&yj_GPU, sizeof(double)*Nparticles));
+	check_error(cudaMalloc((void *)&CDF_GPU, sizeof(double)*Nparticles));
+	check_error(cudaMalloc((void *)&u_GPU, sizeof(double)*Nparticles)); 
 	//}
 
 	for(x = 0; x < Nparticles; x++){
