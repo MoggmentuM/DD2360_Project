@@ -504,6 +504,7 @@ void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparti
 	int k;
 	//double * Ik = (double *)malloc(sizeof(double)*IszX*IszY);
 	int indX, indY;
+	cudaStream_t streams[N_STREAMS];
 	for (int i = 0; i < N_STREAMS; i++) 
 	{
 		cudaStreamCreate(&streams[i]);
@@ -607,7 +608,7 @@ void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparti
 		// cudaMemcpy(u_GPU, u, sizeof(double)*Nparticles, cudaMemcpyHostToDevice);
 
 		// create streams and async copy to GPU
-		cudaStream_t streams[N_STREAMS];
+		
 
 		for (int i = 0; i < N_STREAMS; i++) 
 		{
