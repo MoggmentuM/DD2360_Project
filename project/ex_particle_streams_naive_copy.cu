@@ -604,10 +604,14 @@ void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparti
 
 		// create streams and async copy to GPU
 		cudaStream_t streams[N_STREAMS];
-		for (int i = 0; i < N_STREAMS; i++) {
-			const int SEGMENT_SIZE = Nparticles/N_STREAMS;
-			int offset = i*SEGMENT_SIZE; 
+		for (int i = 0; i < N_STREAMS; i++) 
+		{
 			cudaStreamCreate(&streams[i]);
+		}
+		for (int i = 0; i < N_STREAMS; i++) 
+		{
+		    const int SEGMENT_SIZE = Nparticles/N_STREAMS;
+		    int offset = i*SEGMENT_SIZE; 
 			cudaMemcpyAsync(&arrayX_GPU[offset], &arrayX[offset], sizeof(double)*Nparticles, cudaMemcpyHostToDevice, streams[i]);
 			cudaMemcpyAsync(&arrayY_GPU[offset], &arrayY[offset], sizeof(double)*Nparticles, cudaMemcpyHostToDevice, streams[i]);
 			cudaMemcpyAsync(&xj_GPU[offset],&xj[offset], sizeof(double)*Nparticles, cudaMemcpyHostToDevice, streams[i]);
