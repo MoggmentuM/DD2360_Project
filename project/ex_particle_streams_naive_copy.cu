@@ -504,6 +504,10 @@ void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparti
 	int k;
 	//double * Ik = (double *)malloc(sizeof(double)*IszX*IszY);
 	int indX, indY;
+	for (int i = 0; i < N_STREAMS; i++) 
+	{
+		cudaStreamCreate(&streams[i]);
+	}
 	for(k = 1; k < Nfr; k++){
 		long long set_arrays = get_time();
 		//printf("TIME TO SET ARRAYS TOOK: %f\n", elapsed_time(get_weights, set_arrays));
@@ -604,51 +608,23 @@ void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparti
 
 		// create streams and async copy to GPU
 		cudaStream_t streams[N_STREAMS];
-		for (int i = 0; i < N_STREAMS; i++) 
-		{
-			cudaStreamCreate(&streams[i]);
-		}
+
 		for (int i = 0; i < N_STREAMS; i++) 
 		{
 		    const int SEGMENT_SIZE = Nparticles/N_STREAMS;
 		    int offset = i*SEGMENT_SIZE; 
-			cudaMemcpyAsync(&arrayX_GPU[offset], &arrayX[offset], sizeof(double)*Nparticles, cudaMemcpyHostToDevice, streams[i]);
-			cudaMemcpyAsync(&arrayY_GPU[offset], &arrayY[offset], sizeof(double)*Nparticles, cudaMemcpyHostToDevice, streams[i]);
-			cudaMemcpyAsync(&xj_GPU[offset],&xj[offset], sizeof(double)*Nparticles, cudaMemcpyHostToDevice, streams[i]);
-			cudaMemcpyAsync(&yj_GPU[offset], &yj[offset], sizeof(double)*Nparticles, cudaMemcpyHostToDevice, streams[i]);
-			cudaMemcpyAsync(&CDF_GPU[offset], &CDF[offset], sizeof(double)*Nparticles, cudaMemcpyHostToDevice, streams[i]);
-			cudaMemcpyAsync(&u_GPU[offset],  &u[offset], sizeof(double)*Nparticles, cudaMemcpyHostToDevice, streams[i]);
-		//}
-	
-		//long long end_copy = get_time();
-		//Set number of threads
-		
-		
-		//KERNEL FUNCTION CALL
-		//for (int i = 0; i < N_STREAMS; i++) {
+			cudaMemcpyAsync(&arrayX_GPU[offset], &arrayX[offset], sizeof(double)*SEGMENT_SIZE, cudaMemcpyHostToDevice, streams[i]);
+			cudaMemcpyAsync(&arrayY_GPU[offset], &arrayY[offset], sizeof(double)*SEGMENT_SIZE, cudaMemcpyHostToDevice, streams[i]);
+			cudaMemcpyAsync(&xj_GPU[offset],&xj[offset], sizeof(double)*SEGMENT_SIZE, cudaMemcpyHostToDevice, streams[i]);
+			cudaMemcpyAsync(&yj_GPU[offset], &yj[offset], sizeof(double)*SEGMENT_SIZE, cudaMemcpyHostToDevice, streams[i]);
+			cudaMemcpyAsync(&CDF_GPU[offset], &CDF[offset], sizeof(double)*SEGMENT_SIZE, cudaMemcpyHostToDevice, streams[i]);
+			cudaMemcpyAsync(&u_GPU[offset],  &u[offset], sizeof(double)*SEGMENT_SIZE, cudaMemcpyHostToDevice, streams[i]);
+
 			kernel <<< num_blocks, threads_per_block, 0, streams[i] >>> (arrayX_GPU, arrayY_GPU, CDF_GPU, u_GPU, xj_GPU, yj_GPU, SEGMENT_SIZE,offset);
-      //cudaThreadSynchronize();
-		//}
 
-		// //synchronize streams
-		// for(int i = 0; i < N_STREAMS; i++) {
-		// 	cudaStreamSynchronize(streams[i])
-		// }
-
-		//long long start_copy_back = get_time();
-		//CUDA memory copying back from GPU to CPU memory
-		// cudaMemcpy(yj, yj_GPU, sizeof(double)*Nparticles, cudaMemcpyDeviceToHost);
-		// cudaMemcpy(xj, xj_GPU, sizeof(double)*Nparticles, cudaMemcpyDeviceToHost);
-
-		// copy back
-		//fot i = 0; i < N_STREAMS; i++) {
-			cudaMemcpyAsync(&yj[offset], &yj_GPU[offset], sizeof(double)*Nparticles, cudaMemcpyDeviceToHost, streams[i]);
-			cudaMemcpyAsync(&xj[offset], &xj_GPU[offset], sizeof(double)*Nparticles, cudaMemcpyDeviceToHost, streams[i]);
-    }
-
-		for (int i = 0; i < N_STREAMS; i++) {
-			cudaStreamSynchronize(streams[i]);
-			cudaStreamDestroy(streams[i]);
+			cudaMemcpyAsync(&yj[offset], &yj_GPU[offset], sizeof(double)*SEGMENT_SIZE, cudaMemcpyDeviceToHost, streams[i]);
+			cudaMemcpyAsync(&xj[offset], &xj_GPU[offset], sizeof(double)*SEGMENT_SIZE, cudaMemcpyDeviceToHost, streams[i]);
+			//cudaStreamSynchronize(streams[i]);
     }
 
 		//long long end_copy_back = get_time();
@@ -668,7 +644,10 @@ void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparti
 		printf("TIME TO RESET WEIGHTS TOOK: %f\n", elapsed_time(xyj_time, reset));
 		printf("check error: %f\n",k);
 	}
-	
+	for (int i = 0; i < N_STREAMS; i++) {
+		//cudaStreamSynchronize(streams[i]);
+		cudaStreamDestroy(streams[i]);
+    }
 	//CUDA freeing of memory
 	// cudaFree(u_GPU);
 	// cudaFree(CDF_GPU);
