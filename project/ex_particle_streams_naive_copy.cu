@@ -129,7 +129,7 @@ __global__ void kernel(double * arrayX, double * arrayY, double * CDF, double * 
 	int block_id = blockIdx.x;// + gridDim.x * blockIdx.y;
 	int i = blockDim.x * block_id + threadIdx.x + offset;
 	
-	if(i < segment_size){
+	if(i < segment_size + offset){
 	
 		int index = offset - 1;
 		int x;
