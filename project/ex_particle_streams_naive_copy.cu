@@ -28,7 +28,7 @@
 #define BLOCK_Y 16
 
 // number of streams
-#define N_STREAMS 4
+#define N_STREAMS 16
 //#define SEGMENT_SIZE 64
 
 /**
