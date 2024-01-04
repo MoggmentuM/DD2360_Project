@@ -129,7 +129,7 @@ __global__ void kernel(double * arrayX, double * arrayY, double * CDF, double * 
 	int block_id = blockIdx.x;// + gridDim.x * blockIdx.y;
 	int i = blockDim.x * block_id + threadIdx.x + offset;
 	
-	if(i < segment_size + offset){
+	if((i < segment_size + offset) && (i < Nparticles)){
 	
 		int index = offset - 1;
 		int x;
@@ -141,7 +141,10 @@ __global__ void kernel(double * arrayX, double * arrayY, double * CDF, double * 
 			}
 		}
 		if(index == -1){
-			index = segment_size + offset -1;
+			if(i < Nparticles-1)
+			    index = segment_size + offset -1;
+			else
+			    index = Nparticles -1;
 		}
 		
 		xj[i] = arrayX[index];
@@ -509,6 +512,7 @@ void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparti
 	{
 		cudaStreamCreate(&streams[i]);
 	}
+	const int SEGMENT_SIZE = ceil(Nparticles/N_STREAMS);
 	for(k = 1; k < Nfr; k++){
 		long long set_arrays = get_time();
 		//printf("TIME TO SET ARRAYS TOOK: %f\n", elapsed_time(get_weights, set_arrays));
@@ -612,7 +616,7 @@ void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparti
 
 		for (int i = 0; i < N_STREAMS; i++) 
 		{
-		    const int SEGMENT_SIZE = Nparticles/N_STREAMS;
+		    
 		    int offset = i*SEGMENT_SIZE; 
 			cudaMemcpyAsync(&arrayX_GPU[offset], &arrayX[offset], sizeof(double)*SEGMENT_SIZE, cudaMemcpyHostToDevice, streams[i]);
 			cudaMemcpyAsync(&arrayY_GPU[offset], &arrayY[offset], sizeof(double)*SEGMENT_SIZE, cudaMemcpyHostToDevice, streams[i]);
