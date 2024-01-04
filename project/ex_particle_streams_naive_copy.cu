@@ -481,6 +481,7 @@ void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparti
 	double * CDF_GPU;
 
 	int * ind = (int*)malloc(sizeof(int)*countOnes);
+	double * u;
 	cudaHostAlloc(&u, Nparticles * sizeof(double),cudaHostAllocDefault);
 	//double * u = (double *)malloc(sizeof(double)*Nparticles);
 	double * u_GPU;
