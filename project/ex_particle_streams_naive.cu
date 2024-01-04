@@ -1,6 +1,6 @@
 /**
  * @file ex_particle_streams_naive.cu
- * @author Valeria Grotto (vgrotto@kth.se) Martin Forslund (uz6@kth.se)
+ * @author Valeria Grotto (vgrotto@kth.se) 
  * @brief Modified the naive version of the code to support parallelism with pinned memory and CUDA streams.
  * @version 0.2
  * @date 2023-12-16
