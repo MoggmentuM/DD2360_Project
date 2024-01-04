@@ -424,7 +424,7 @@ int findIndex(double * CDF, int lengthCDF, double value){
 * @param seed The seed array used for random number generation
 * @param Nparticles The number of particles to be used
 */
-void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparticles,int Nstream){
+void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparticles,int N_STREAMS){
 	int max_size = IszX*IszY*Nfr;
 	long long start = get_time();
 	//original particle centroid
