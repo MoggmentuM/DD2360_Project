@@ -626,7 +626,7 @@ void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparti
 
 			cudaMemcpyAsync(&yj[offset], &yj_GPU[offset], sizeof(double)*SEGMENT_SIZE, cudaMemcpyDeviceToHost, streams[i]);
 			cudaMemcpyAsync(&xj[offset], &xj_GPU[offset], sizeof(double)*SEGMENT_SIZE, cudaMemcpyDeviceToHost, streams[i]);
-			//cudaStreamSynchronize(streams[i]);
+			cudaStreamSynchronize(streams[i]);
     }
 
 		//long long end_copy_back = get_time();
