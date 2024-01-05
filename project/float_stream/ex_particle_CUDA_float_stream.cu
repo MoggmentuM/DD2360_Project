@@ -236,7 +236,7 @@ __device__ double dev_round_double(double value) {
  * param7: weights
  * param8: Nparticles
  *****************************/
-__global__ void find_index_kernel(double * arrayX, double * arrayY, double * CDF, double * u, double * xj, double * yj, double * weights, int Nparticles,int offset,int SEGMENT_SIZE) {
+__global__ void find_index_kernel(double * arrayX, double * arrayY, double * CDF, double * u, double * xj, double * yj, double * weights, int Nparticles,int offset,int segment_size) {
     int block_id = blockIdx.x;
     int i = blockDim.x * block_id + threadIdx.x + offset;
 
@@ -264,7 +264,7 @@ __global__ void find_index_kernel(double * arrayX, double * arrayY, double * CDF
     __syncthreads();
 }
 
-__global__ void normalize_weights_kernel(double * weights, int Nparticles, double* partial_sums, double * CDF, double * u, int * seed,int offset,int SEGMENT_SIZE) {
+__global__ void normalize_weights_kernel(double * weights, int Nparticles, double* partial_sums, double * CDF, double * u, int * seed,int offset,int segment_size) {
     int block_id = blockIdx.x;
     int i = blockDim.x * block_id + threadIdx.x + offset;
     __shared__ double u1, sumWeights;
@@ -330,7 +330,7 @@ __global__ void sum_kernel(double* partial_sums, int Nparticles) {
  * param11: IszY
  * param12: Nfr
  *****************************/
-__global__ void likelihood_kernel(double * arrayX, double * arrayY, double * xj, double * yj, double * CDF, int * ind, int * objxy, double * likelihood, unsigned char * I, double * u, double * weights, int Nparticles, int countOnes, int max_size, int k, int IszY, int Nfr, int *seed, double* partial_sums,int offset,int SEGMENT_SIZE) {
+__global__ void likelihood_kernel(double * arrayX, double * arrayY, double * xj, double * yj, double * CDF, int * ind, int * objxy, double * likelihood, unsigned char * I, double * u, double * weights, int Nparticles, int countOnes, int max_size, int k, int IszY, int Nfr, int *seed, double* partial_sums,int offset,int segment_size) {
     int block_id = blockIdx.x;
     int i = blockDim.x * block_id + threadIdx.x + offset;
     int y;
