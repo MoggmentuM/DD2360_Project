@@ -791,19 +791,20 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
 	{
         int offset = i * SEGMENT_SIZE;
         check_error(cudaMemcpyAsync(&arrayX[offset], &arrayX_GPU[offset], sizeof (double) *SEGMENT_SIZE, cudaMemcpyDeviceToHost, streams[i]));
-        long long arrayX_time = get_time();
+       // long long arrayX_time = get_time();
         //printf("check error555");
         check_error(cudaMemcpyAsync(&arrayY[offset], &arrayY_GPU[offset], sizeof (double) *SEGMENT_SIZE, cudaMemcpyDeviceToHost, streams[i]));
-        long long arrayY_time = get_time();
+        //long long arrayY_time = get_time();
         check_error(cudaMemcpyAsync(&weights[offset], &weights_GPU[offset], sizeof (double) *SEGMENT_SIZE, cudaMemcpyDeviceToHost, streams[i]));
-        long long back_end_time = get_time();
+        
     }
+    long long back_end_time = get_time();
     printf("GPU Execution: %lf\n", elapsed_time(send_end, back_time));
     printf("FREE TIME: %lf\n", elapsed_time(back_time, free_time));
     printf("TIME TO SEND BACK: %lf\n", elapsed_time(back_time, back_end_time));
-    printf("SEND ARRAY X BACK: %lf\n", elapsed_time(free_time, arrayX_time));
-    printf("SEND ARRAY Y BACK: %lf\n", elapsed_time(arrayX_time, arrayY_time));
-    printf("SEND WEIGHTS BACK: %lf\n", elapsed_time(arrayY_time, back_end_time));
+    //printf("SEND ARRAY X BACK: %lf\n", elapsed_time(free_time, arrayX_time));
+    //printf("SEND ARRAY Y BACK: %lf\n", elapsed_time(arrayX_time, arrayY_time));
+    //printf("SEND WEIGHTS BACK: %lf\n", elapsed_time(arrayY_time, back_end_time));
 
     xe = 0;
     ye = 0;
