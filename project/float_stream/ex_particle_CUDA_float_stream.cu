@@ -774,7 +774,10 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
     cudaThreadSynchronize();
     long long back_time = get_time();
         
-
+    for (int i = 0; i < N_STREAMS; i++) {
+		//cudaStreamSynchronize(streams[i]);
+		cudaStreamDestroy(streams[i]);
+    }
     cudaFree(xj_GPU);
     cudaFree(yj_GPU);
     cudaFree(CDF_GPU);
@@ -814,10 +817,7 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
     printf("%lf\n", distance);
 
 
-    for (int i = 0; i < N_STREAMS; i++) {
-		//cudaStreamSynchronize(streams[i]);
-		cudaStreamDestroy(streams[i]);
-    }
+
 
     //CUDA freeing of memory
 
