@@ -127,28 +127,25 @@ __device__ int findIndexBin(double * CDF, int beginIndex, int endIndex, double v
 *****************************/
 __global__ void kernel(double * arrayX, double * arrayY, double * CDF, double * u, double * xj, double * yj, int segment_size,int offset, int Nparticles){
 	int block_id = blockIdx.x;// + gridDim.x * blockIdx.y;
-	int i = blockDim.x * block_id + threadIdx.x + offset;
+	int h = blockDim.x * block_id + threadIdx.x + offset;
 	
-	if((i < segment_size + offset) && (i < Nparticles)){
+	if((h < segment_size + offset) && (h < Nparticles)){
 	
-		int index = offset - 1;
+		int index = - 1;
 		int x;
 		
-		for(x = offset; x < segment_size + offset; x++){
-			if(CDF[x] >= u[i]){
+		for(x = 0; x < Nparticles; x++){
+			if(CDF[x] >= u[h]){
 				index = x;
 				break;
 			}
 		}
 		if(index == -1){
-			if(i < Nparticles-1)
-			    index = segment_size + offset -1;
-			else
 			    index = Nparticles -1;
 		}
 		
-		xj[i] = arrayX[index];
-		yj[i] = arrayY[index];
+		xj[h] = arrayX[index];
+		yj[h] = arrayY[index];
 		
 	}
 }
@@ -617,7 +614,7 @@ void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparti
 		for (int i = 0; i < N_STREAMS; i++) 
 		{
 		    
-		    int offset = i*SEGMENT_SIZE; 
+		    int offset = i * SEGMENT_SIZE; 
 			cudaMemcpyAsync(&arrayX_GPU[offset], &arrayX[offset], sizeof(double)*SEGMENT_SIZE, cudaMemcpyHostToDevice, streams[i]);
 			cudaMemcpyAsync(&arrayY_GPU[offset], &arrayY[offset], sizeof(double)*SEGMENT_SIZE, cudaMemcpyHostToDevice, streams[i]);
 			cudaMemcpyAsync(&xj_GPU[offset],&xj[offset], sizeof(double)*SEGMENT_SIZE, cudaMemcpyHostToDevice, streams[i]);
