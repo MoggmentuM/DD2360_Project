@@ -772,10 +772,10 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
         find_index_kernel << < num_blocks, threads_per_block,0,streams[i]  >> > (arrayX_GPU, arrayY_GPU, CDF_GPU, u_GPU, xj_GPU, yj_GPU, weights_GPU, Nparticles,offset,SEGMENT_SIZE);
         
     }
-    //cudaThreadSynchronize();
+    cudaThreadSynchronize();
 
     }//end loop
-    cudaThreadSynchronize();
+    //cudaThreadSynchronize();
     //block till kernels are finished
     
     long long back_time = get_time();
