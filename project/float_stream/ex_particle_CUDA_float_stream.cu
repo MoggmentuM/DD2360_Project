@@ -663,10 +663,10 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
     double * yj = (double *) malloc(sizeof (double) *Nparticles);
     // double * CDF = (double *) malloc(sizeof (double) *Nparticles);
     //double * likelihood;
-	double * arrayX; 
-	double * arrayY; 
-	double * xj; 
-	double * yj; 
+	//double * arrayX; 
+	//double * arrayY; 
+	//double * xj; 
+	//double * yj; 
 	//double * CDF;
     //cudaHostAlloc((void **)&likelihood, Nparticles * sizeof(double),cudaHostAllocDefault);
     //cudaHostAlloc((void **)&arrayX, Nparticles * sizeof(double),cudaHostAllocDefault);
