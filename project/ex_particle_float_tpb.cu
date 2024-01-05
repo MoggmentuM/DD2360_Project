@@ -768,15 +768,15 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
     printf("SEND ARRAY Y BACK: %lf\n", elapsed_time(arrayX_time, arrayY_time));
     printf("SEND WEIGHTS BACK: %lf\n", elapsed_time(arrayY_time, back_end_time));
 
-    xe = 0;
-    ye = 0;
-    // estimate the object location by expfected values
+    xe = 0.0f;
+    ye = 0.0f;
+    // estimate the object location by expected values
     for (x = 0; x < Nparticles; x++) {
         xe += arrayX[x] * weights[x];
         ye += arrayY[x] * weights[x];
     }
-    printf("XE: %lf\n", xe);
-    printf("YE: %lf\n", ye);
+    printf("XE: %f\n", xe);
+    printf("YE: %f\n", ye);
     float distance = sqrtf(pow((float) (xe - (int) roundfloat(IszY / 2.0)), 2) + pow((float) (ye - (int) roundfloat(IszX / 2.0)), 2));
     printf("%lf\n", distance);
 
