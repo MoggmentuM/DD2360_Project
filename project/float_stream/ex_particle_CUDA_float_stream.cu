@@ -334,7 +334,7 @@ __global__ void likelihood_kernel(double * arrayX, double * arrayY, double * xj,
     int block_id = blockIdx.x;
     int i = blockDim.x * block_id + threadIdx.x + offset;
     int y;
-    printf{"check error"};
+    printf("check error");
     int indX, indY; 
     extern __shared__ double buffer[];
     if (i < SEGMENT_SIZE + offset) {
