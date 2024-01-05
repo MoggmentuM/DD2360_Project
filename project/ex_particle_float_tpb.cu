@@ -710,6 +710,7 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
         xj[x] = xe;
         yj[x] = ye;
 
+
     }
 
     int k;
@@ -772,8 +773,9 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
     ye = 0.0f;
     // estimate the object location by expected values
     for (x = 0; x < Nparticles; x++) {
-        xe += arrayX[x] * weights[x];
-        ye += arrayY[x] * weights[x];
+    printf("Particle %d: X = %f, Y = %f, Weight = %f\n", x, arrayX[x], arrayY[x], weights[x]);
+    xe += arrayX[x] * weights[x];
+    ye += arrayY[x] * weights[x];
     }
     printf("XE: %f\n", xe);
     printf("YE: %f\n", ye);
