@@ -240,7 +240,7 @@ __global__ void find_index_kernel(double * arrayX, double * arrayY, double * CDF
     int block_id = blockIdx.x;
     int i = blockDim.x * block_id + threadIdx.x + offset;
 
-    if (i < SEGMENT_SIZE + offset) {
+    if ((i < segment_size + offset) && (i < Nparticles)) {
 
         int index = -1;
         int x;
@@ -274,7 +274,7 @@ __global__ void normalize_weights_kernel(double * weights, int Nparticles, doubl
     
     __syncthreads();
     
-    if (i < SEGMENT_SIZE + offset) {
+    if ((i < segment_size + offset) && (i < Nparticles)) {
         weights[i] = weights[i] / sumWeights;
     }
     
@@ -292,7 +292,7 @@ __global__ void normalize_weights_kernel(double * weights, int Nparticles, doubl
     
     __syncthreads();
         
-    if (i < SEGMENT_SIZE + offset) {
+    if ((i < segment_size + offset) && (i < Nparticles)) {
         u[i] = u1 + i / ((double) (Nparticles));
     }
 }
@@ -336,7 +336,7 @@ __global__ void likelihood_kernel(double * arrayX, double * arrayY, double * xj,
     int y;
     int indX, indY; 
     extern __shared__ double buffer[];
-    if (i < SEGMENT_SIZE + offset) {
+    if ((i < segment_size + offset) && (i < Nparticles)) {
         arrayX[i] = xj[i]; 
         arrayY[i] = yj[i]; 
 
@@ -349,7 +349,7 @@ __global__ void likelihood_kernel(double * arrayX, double * arrayY, double * xj,
 
     __syncthreads();
 
-    if (i < SEGMENT_SIZE + offset) {
+    if ((i < segment_size + offset) && (i < Nparticles)) {
         for (y = 0; y < countOnes; y++) {
             //added dev_round_double() to be consistent with roundDouble
             indX = dev_round_double(arrayX[i]) + objxy[y * 2 + 1];
@@ -371,7 +371,7 @@ __global__ void likelihood_kernel(double * arrayX, double * arrayY, double * xj,
 
     __syncthreads();
 
-    if (i < SEGMENT_SIZE + offset) {
+    if ((i < segment_size + offset) && (i < Nparticles)) {
 
         buffer[threadIdx.x] = weights[i];
     }
@@ -787,11 +787,11 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
     cudaFree(partial_sums);
 
     long long free_time = get_time();
-    cudaMemcpy(arrayX, arrayX_GPU, sizeof (double) *Nparticles, cudaMemcpyDeviceToHost);
+    cudaMemcpy(arrayX, arrayX_GPU, sizeof(double) *Nparticles, cudaMemcpyDeviceToHost);
     long long arrayX_time = get_time();
-    cudaMemcpy(arrayY, arrayY_GPU, sizeof (double) *Nparticles, cudaMemcpyDeviceToHost);
+    cudaMemcpy(arrayY, arrayY_GPU, sizeof(double) *Nparticles, cudaMemcpyDeviceToHost);
     long long arrayY_time = get_time();
-    cudaMemcpy(weights, weights_GPU, sizeof (double) *Nparticles, cudaMemcpyDeviceToHost);
+    cudaMemcpy(weights, weights_GPU, sizeof(double) *Nparticles, cudaMemcpyDeviceToHost);
     long long back_end_time = get_time();
 
     printf("GPU Execution: %lf\n", elapsed_time(send_end, back_time));
