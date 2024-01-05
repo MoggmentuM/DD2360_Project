@@ -760,10 +760,10 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
         
 
         sum_kernel << < num_blocks, threads_per_block,0,streams[0] >> > (partial_sums, Nparticles);
-        printf("check error111");
-
-        normalize_weights_kernel << < num_blocks, threads_per_block,0,streams[i] >> > (weights_GPU, Nparticles, partial_sums, CDF_GPU, u_GPU, seed_GPU,offset,SEGMENT_SIZE);
         
+        normalize_weights_kernel << < num_blocks, threads_per_block,0,streams[i] >> > (weights_GPU, Nparticles, partial_sums, CDF_GPU, u_GPU, seed_GPU,offset,SEGMENT_SIZE);
+        printf("check error222");
+
         find_index_kernel << < num_blocks, threads_per_block,0,streams[i]  >> > (arrayX_GPU, arrayY_GPU, CDF_GPU, u_GPU, xj_GPU, yj_GPU, weights_GPU, Nparticles,offset,SEGMENT_SIZE);
     }
 
