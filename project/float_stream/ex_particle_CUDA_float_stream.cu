@@ -334,7 +334,6 @@ __global__ void likelihood_kernel(double * arrayX, double * arrayY, double * xj,
     int block_id = blockIdx.x;
     int i = blockDim.x * block_id + threadIdx.x + offset;
     int y;
-    printf("check error");
     int indX, indY; 
     extern __shared__ double buffer[];
     if (i < SEGMENT_SIZE + offset) {
@@ -758,6 +757,7 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
         int offset = i * SEGMENT_SIZE;
         
         likelihood_kernel << < num_blocks, threads_per_block ,threads_per_block,streams[i]>> > (arrayX_GPU, arrayY_GPU, xj_GPU, yj_GPU, CDF_GPU, ind_GPU, objxy_GPU, likelihood_GPU, I_GPU, u_GPU, weights_GPU, Nparticles, countOnes, max_size, k, IszY, Nfr, seed_GPU, partial_sums,offset,SEGMENT_SIZE);
+        printf("check error");
 
         sum_kernel << < num_blocks, threads_per_block,0,streams[0] >> > (partial_sums, Nparticles);
 
