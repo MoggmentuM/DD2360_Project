@@ -133,7 +133,7 @@ __global__ void kernel(double * arrayX, double * arrayY, double * CDF, double * 
 	
 		int index = - 1;
 		int x;
-		
+		/*
 		for(x = 0; x < Nparticles; x++){
 			if(CDF[x] >= u[h]){
 				index = x;
@@ -143,7 +143,11 @@ __global__ void kernel(double * arrayX, double * arrayY, double * CDF, double * 
 		if(index == -1){
 			    index = Nparticles -1;
 		}
-		
+		*/
+		index = findIndexBin(CDF, 0, Nparticles - 1, u);
+		if(index == -1){
+			index = Nparticles -1;
+	    }
 		xj[h] = arrayX[index];
 		yj[h] = arrayY[index];
 		
