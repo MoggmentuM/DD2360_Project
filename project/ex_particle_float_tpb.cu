@@ -11,7 +11,7 @@
 #define BLOCK_Y 16
 #define PI 3.1415926535897932
 
-const int threads_per_block = 512;
+const int threads_per_block = 256;
 
 /**
 @var M value for Linear Congruential Generator (LCG); use GCC's value
