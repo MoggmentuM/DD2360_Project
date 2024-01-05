@@ -152,7 +152,7 @@ float randn(int * seed, int index) {
 
 float test_randn(int * seed, int index) {
     //Box-Muller algortihm
-    float pi = 3.14159265358979323846;
+    float pi = 3.14159265359f;
     float u = randu(seed, index);
     float v = randu(seed, index);
     float cosine = cosf(2 * pi * v);
