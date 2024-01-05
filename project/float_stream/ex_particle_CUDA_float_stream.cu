@@ -787,11 +787,11 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
     cudaFree(partial_sums);
 
     long long free_time = get_time();
-    cudaMemcpy(arrayX, arrayX_GPU, sizeof(double) *Nparticles, cudaMemcpyDeviceToHost);
+    check_error(cudaMemcpy(arrayX, arrayX_GPU, sizeof(double) *Nparticles, cudaMemcpyDeviceToHost));
     long long arrayX_time = get_time();
-    cudaMemcpy(arrayY, arrayY_GPU, sizeof(double) *Nparticles, cudaMemcpyDeviceToHost);
+    check_error(cudaMemcpy(arrayY, arrayY_GPU, sizeof(double) *Nparticles, cudaMemcpyDeviceToHost));
     long long arrayY_time = get_time();
-    cudaMemcpy(weights, weights_GPU, sizeof(double) *Nparticles, cudaMemcpyDeviceToHost);
+    check_error(cudaMemcpy(weights, weights_GPU, sizeof(double) *Nparticles, cudaMemcpyDeviceToHost));
     long long back_end_time = get_time();
 
     printf("GPU Execution: %lf\n", elapsed_time(send_end, back_time));
