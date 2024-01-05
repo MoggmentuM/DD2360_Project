@@ -144,7 +144,7 @@ __global__ void kernel(double * arrayX, double * arrayY, double * CDF, double * 
 			    index = Nparticles -1;
 		}
 		*/
-		index = findIndexBin(CDF, 0, Nparticles - 1, u);
+		index = findIndexBin(CDF, 0, Nparticles - 1, u[h]);
 		if(index == -1){
 			index = Nparticles -1;
 	    }
