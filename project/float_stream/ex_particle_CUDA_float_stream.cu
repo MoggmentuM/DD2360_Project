@@ -787,14 +787,17 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
     cudaFree(partial_sums);
 
     long long free_time = get_time();
-    
-    check_error(cudaMemcpy(arrayX, arrayX_GPU, sizeof (double) *Nparticles, cudaMemcpyDeviceToHost));
-    long long arrayX_time = get_time();
-    printf("check error555");
-    check_error(cudaMemcpy(arrayY, arrayY_GPU, sizeof (double) *Nparticles, cudaMemcpyDeviceToHost));
-    long long arrayY_time = get_time();
-    check_error(cudaMemcpy(weights, weights_GPU, sizeof (double) *Nparticles, cudaMemcpyDeviceToHost));
-    long long back_end_time = get_time();
+    for (int i = 0; i < N_STREAMS; i++) 
+	{
+        int offset = i * SEGMENT_SIZE;
+        check_error(cudaMemcpyAsync(&arrayX[offset], &arrayX_GPU[offset], sizeof (double) *SEGMENT_SIZE, cudaMemcpyDeviceToHost, streams[i]));
+        long long arrayX_time = get_time();
+        //printf("check error555");
+        check_error(cudaMemcpyAsync(&arrayY[offset], &arrayY_GPU[offset], sizeof (double) *SEGMENT_SIZE, cudaMemcpyDeviceToHost, streams[i]));
+        long long arrayY_time = get_time();
+        check_error(cudaMemcpyAsync(&weights[offset], &weights_GPU[offset], sizeof (double) *SEGMENT_SIZE, cudaMemcpyDeviceToHost, streams[i]));
+        long long back_end_time = get_time();
+    }
     printf("GPU Execution: %lf\n", elapsed_time(send_end, back_time));
     printf("FREE TIME: %lf\n", elapsed_time(back_time, free_time));
     printf("TIME TO SEND BACK: %lf\n", elapsed_time(back_time, back_end_time));
