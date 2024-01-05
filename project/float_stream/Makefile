@@ -8,7 +8,7 @@ INCLUDE := $(CUDA_DIR)/include
 
 all: float_stream
 
-streams: ex_particle_CUDA_float_stream.cu
+float_stream: ex_particle_CUDA_float_stream.cu
 	$(CC) -I$(INCLUDE) -L$(CUDA_LIB_DIR) -lcuda -g -lm -O3 -use_fast_math -arch sm_75 ex_particle_CUDA_float_stream.cu -o particlefilter_streams
 	
 #cuRAND: ex_particle_cuRAND_float_seq.cu
