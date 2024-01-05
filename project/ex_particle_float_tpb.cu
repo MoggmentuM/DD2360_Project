@@ -15,7 +15,9 @@ const int threads_per_block = 256 // most optimal TPB.
 /**
 @var M value for Linear Congruential Generator (LCG); use GCC's value
  */
+
 long M = INT_MAX;
+
 /**
 @var A value for LCG
  */
