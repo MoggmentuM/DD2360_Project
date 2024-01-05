@@ -7,11 +7,14 @@
 #include <fcntl.h>
 #include <float.h>
 #include <sys/time.h>
+#include <cuda_runtime.h>
 #define BLOCK_X 16
 #define BLOCK_Y 16
 #define PI 3.1415926535897932
 
-const int threads_per_block = 256;
+const int threads_per_block = 512;
+// Define the number of streams
+#define NUM_STREAMS 2
 
 /**
 @var M value for Linear Congruential Generator (LCG); use GCC's value
@@ -659,12 +662,15 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
     }
 
     //initial likelihood to 0.0
+    
+    /*
     double * likelihood = (double *) malloc(sizeof (double) *Nparticles);
     double * arrayX = (double *) malloc(sizeof (double) *Nparticles);
     double * arrayY = (double *) malloc(sizeof (double) *Nparticles);
     double * xj = (double *) malloc(sizeof (double) *Nparticles);
     double * yj = (double *) malloc(sizeof (double) *Nparticles);
     double * CDF = (double *) malloc(sizeof (double) *Nparticles);
+    */
 
     //GPU copies of arrays
     double * arrayX_GPU;
@@ -677,14 +683,17 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
     double * weights_GPU;
     int * objxy_GPU;
 
-    int * ind = (int*) malloc(sizeof (int) *countOnes * Nparticles);
+    //int * ind;
+    //int * ind = (int*) malloc(sizeof (int) *countOnes * Nparticles);
     int * ind_GPU;
-    double * u = (double *) malloc(sizeof (double) *Nparticles);
+    //double * u;
+    //double * u = (double *) malloc(sizeof (double) *Nparticles);
     double * u_GPU;
     int * seed_GPU;
     double* partial_sums;
 
     //CUDA memory allocation
+    /*
     check_error(cudaMalloc((void **) &arrayX_GPU, sizeof (double) *Nparticles));
     check_error(cudaMalloc((void **) &arrayY_GPU, sizeof (double) *Nparticles));
     check_error(cudaMalloc((void **) &xj_GPU, sizeof (double) *Nparticles));
@@ -700,21 +709,57 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
     check_error(cudaMalloc((void **) &ind_GPU, sizeof (int) *countOnes * Nparticles));
     check_error(cudaMalloc((void **) &seed_GPU, sizeof (int) *Nparticles));
     check_error(cudaMalloc((void **) &partial_sums, sizeof (double) *Nparticles));
+*/
+    check_error(cudaMallocManaged((void **)&arrayX_GPU, sizeof(double) * Nparticles));
+    check_error(cudaMallocManaged((void **)&arrayY_GPU, sizeof(double) * Nparticles));
+    check_error(cudaMallocManaged((void **)&xj_GPU, sizeof(double) * Nparticles));
+    check_error(cudaMallocManaged((void **)&yj_GPU, sizeof(double) * Nparticles));
+    check_error(cudaMallocManaged((void **)&CDF_GPU, sizeof(double) * Nparticles));
+    check_error(cudaMallocManaged((void **)&u_GPU, sizeof(double) * Nparticles));
+    check_error(cudaMallocManaged((void **)&likelihood_GPU, sizeof(double) * Nparticles));
+
+    check_error(cudaMemset((void *) likelihood_GPU, 0, sizeof (double) *Nparticles));
+
+    check_error(cudaMallocManaged((void **)&weights_GPU, sizeof(double) * Nparticles));
+    check_error(cudaMallocManaged((void **)&I_GPU, sizeof(unsigned char) * IszX * IszY * Nfr));
+    check_error(cudaMallocManaged((void **)&objxy_GPU, sizeof(int) * 2 * countOnes));
+    check_error(cudaMallocManaged((void **)&ind_GPU, sizeof(int) * countOnes * Nparticles));
+    check_error(cudaMallocManaged((void **)&seed_GPU, sizeof(int) * Nparticles));
+    check_error(cudaMallocManaged((void **)&partial_sums, sizeof(double) * Nparticles));
+
+// Prefetch data to GPU
+
+    cudaMemPrefetchAsync(arrayX_GPU, sizeof(double) * Nparticles, cudaCpuDeviceId);
+    cudaMemPrefetchAsync(arrayY_GPU, sizeof(double) * Nparticles, cudaCpuDeviceId);
+    cudaMemPrefetchAsync(xj_GPU, sizeof(double) * Nparticles, cudaCpuDeviceId);
+    cudaMemPrefetchAsync(yj_GPU, sizeof(double) * Nparticles, cudaCpuDeviceId);
+    cudaMemPrefetchAsync(CDF_GPU, sizeof(double) * Nparticles, cudaCpuDeviceId);
+    cudaMemPrefetchAsync(u_GPU, sizeof(double) * Nparticles, cudaCpuDeviceId);
+    cudaMemPrefetchAsync(likelihood_GPU, sizeof(unsigned char) * IszX * IszY * Nfr, cudaCpuDeviceId);
+    cudaMemPrefetchAsync(weights_GPU, sizeof(double) * Nparticles, cudaCpuDeviceId);
+    cudaMemPrefetchAsync(I_GPU, sizeof(double) * Nparticles, cudaCpuDeviceId);
+    cudaMemPrefetchAsync(objxy_GPU, sizeof(int) * 2 * countOnes, cudaCpuDeviceId);
+    cudaMemPrefetchAsync(ind_GPU, sizeof(int) * Nparticles * countOnes, cudaCpuDeviceId);
+    cudaMemPrefetchAsync(seed_GPU, sizeof(int) * Nparticles, cudaCpuDeviceId);
+    cudaMemPrefetchAsync(partial_sums, sizeof(double) * Nparticles, cudaCpuDeviceId);
 
 
     //Donnie - this loop is different because in this kernel, arrayX and arrayY
     //  are set equal to xj before every iteration, so effectively, arrayX and 
     //  arrayY will be set to xe and ye before the first iteration.
     for (x = 0; x < Nparticles; x++) {
-
+/*
         xj[x] = xe;
         yj[x] = ye;
-
+*/
+        xj_GPU[x] = xe;
+        yj_GPU[x] = ye;
     }
 
     int k;
     int indX, indY;
     //start send
+    /*
     long long send_start = get_time();
     check_error(cudaMemcpy(I_GPU, I, sizeof (unsigned char) *IszX * IszY*Nfr, cudaMemcpyHostToDevice));
     check_error(cudaMemcpy(objxy_GPU, objxy, sizeof (int) *2 * countOnes, cudaMemcpyHostToDevice));
@@ -724,9 +769,10 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
     check_error(cudaMemcpy(seed_GPU, seed, sizeof (int) *Nparticles, cudaMemcpyHostToDevice));
     long long send_end = get_time();
     printf("TIME TO SEND TO GPU: %f\n", elapsed_time(send_start, send_end));
+    */
     int num_blocks = ceil((double) Nparticles / (double) threads_per_block);
 
-
+/*
     for (k = 1; k < Nfr; k++) {
         
         likelihood_kernel << < num_blocks, threads_per_block >> > (arrayX_GPU, arrayY_GPU, xj_GPU, yj_GPU, CDF_GPU, ind_GPU, objxy_GPU, likelihood_GPU, I_GPU, u_GPU, weights_GPU, Nparticles, countOnes, max_size, k, IszY, Nfr, seed_GPU, partial_sums);
@@ -738,9 +784,16 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
         find_index_kernel << < num_blocks, threads_per_block >> > (arrayX_GPU, arrayY_GPU, CDF_GPU, u_GPU, xj_GPU, yj_GPU, weights_GPU, Nparticles);
 
     }//end loop
-
+*/
+for (k = 1; k < Nfr; k++) {
+        likelihood_kernel<<<num_blocks, threads_per_block>>>(arrayX_GPU, arrayY_GPU, xj_GPU, yj_GPU, CDF_GPU, ind_GPU, objxy_GPU, likelihood_GPU, I_GPU, u_GPU, weights_GPU, Nparticles, countOnes, max_size, k, IszY, Nfr, seed_GPU, partial_sums);
+        sum_kernel<<<num_blocks, threads_per_block>>>(partial_sums, Nparticles);
+        normalize_weights_kernel<<<num_blocks, threads_per_block>>>(weights_GPU, Nparticles, partial_sums, CDF_GPU, u_GPU, seed_GPU);
+        find_index_kernel<<<num_blocks, threads_per_block>>>(arrayX_GPU, arrayY_GPU, CDF_GPU, u_GPU, xj_GPU, yj_GPU, weights_GPU, Nparticles);
+    }
     //block till kernels are finished
-    cudaThreadSynchronize();
+    cudaDeviceSynchronize();
+    //cudaThreadSynchronize();
     long long back_time = get_time();
 
     cudaFree(xj_GPU);
@@ -755,13 +808,13 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
     cudaFree(partial_sums);
 
     long long free_time = get_time();
-    check_error(cudaMemcpy(arrayX, arrayX_GPU, sizeof (double) *Nparticles, cudaMemcpyDeviceToHost));
+    //check_error(cudaMemcpy(arrayX, arrayX_GPU, sizeof (double) *Nparticles, cudaMemcpyDeviceToHost));
     long long arrayX_time = get_time();
-    check_error(cudaMemcpy(arrayY, arrayY_GPU, sizeof (double) *Nparticles, cudaMemcpyDeviceToHost));
+    //check_error(cudaMemcpy(arrayY, arrayY_GPU, sizeof (double) *Nparticles, cudaMemcpyDeviceToHost));
     long long arrayY_time = get_time();
-    check_error(cudaMemcpy(weights, weights_GPU, sizeof (double) *Nparticles, cudaMemcpyDeviceToHost));
+    //check_error(cudaMemcpy(weights, weights_GPU, sizeof (double) *Nparticles, cudaMemcpyDeviceToHost));
     long long back_end_time = get_time();
-    printf("GPU Execution: %lf\n", elapsed_time(send_end, back_time));
+    //printf("GPU Execution: %lf\n", elapsed_time(send_end, back_time));
     printf("FREE TIME: %lf\n", elapsed_time(back_time, free_time));
     printf("TIME TO SEND BACK: %lf\n", elapsed_time(back_time, back_end_time));
     printf("SEND ARRAY X BACK: %lf\n", elapsed_time(free_time, arrayX_time));
@@ -772,8 +825,12 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
     ye = 0;
     // estimate the object location by expected values
     for (x = 0; x < Nparticles; x++) {
+      /*
         xe += arrayX[x] * weights[x];
         ye += arrayY[x] * weights[x];
+    */
+    xe += arrayX_GPU[x] * weights_GPU[x];
+    ye += arrayY_GPU[x] * weights_GPU[x];
     }
     printf("XE: %lf\n", xe);
     printf("YE: %lf\n", ye);
@@ -786,6 +843,7 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
     cudaFree(arrayX_GPU);
 
     //free regular memory
+    /*
     free(likelihood);
     free(arrayX);
     free(arrayY);
@@ -794,6 +852,7 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
     free(CDF);
     free(ind);
     free(u);
+    */
 }
 
 int main(int argc, char * argv[]) {
