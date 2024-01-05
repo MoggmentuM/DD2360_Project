@@ -787,9 +787,10 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
     cudaFree(partial_sums);
 
     long long free_time = get_time();
-    printf("check error444");
+    
     check_error(cudaMemcpy(arrayX, arrayX_GPU, sizeof (double) *Nparticles, cudaMemcpyDeviceToHost));
     long long arrayX_time = get_time();
+    printf("check error555");
     check_error(cudaMemcpy(arrayY, arrayY_GPU, sizeof (double) *Nparticles, cudaMemcpyDeviceToHost));
     long long arrayY_time = get_time();
     check_error(cudaMemcpy(weights, weights_GPU, sizeof (double) *Nparticles, cudaMemcpyDeviceToHost));
