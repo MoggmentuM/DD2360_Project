@@ -774,10 +774,7 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
     cudaThreadSynchronize();
     long long back_time = get_time();
         
-    for (int i = 0; i < N_STREAMS; i++) {
-		//cudaStreamSynchronize(streams[i]);
-		cudaStreamDestroy(streams[i]);
-    }
+
     cudaFree(xj_GPU);
     cudaFree(yj_GPU);
     cudaFree(CDF_GPU);
@@ -789,12 +786,15 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
     cudaFree(seed_GPU);
     cudaFree(partial_sums);
 
+
+    check_error(cudaMemcpy(weights, weights_GPU, sizeof (double) *Nparticles, cudaMemcpyDeviceToHost));
+    printf("check error444");
+
     long long free_time = get_time();
     check_error(cudaMemcpy(arrayX, arrayX_GPU, sizeof (double) *Nparticles, cudaMemcpyDeviceToHost));
     long long arrayX_time = get_time();
     check_error(cudaMemcpy(arrayY, arrayY_GPU, sizeof (double) *Nparticles, cudaMemcpyDeviceToHost));
     long long arrayY_time = get_time();
-    check_error(cudaMemcpy(weights, weights_GPU, sizeof (double) *Nparticles, cudaMemcpyDeviceToHost));
     long long back_end_time = get_time();
 
     printf("GPU Execution: %lf\n", elapsed_time(send_end, back_time));
@@ -817,7 +817,10 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
     printf("%lf\n", distance);
 
 
-
+    for (int i = 0; i < N_STREAMS; i++) {
+		//cudaStreamSynchronize(streams[i]);
+		cudaStreamDestroy(streams[i]);
+    }
 
     //CUDA freeing of memory
 
