@@ -334,7 +334,7 @@ __global__ void likelihood_kernel(double * arrayX, double * arrayY, double * xj,
     int block_id = blockIdx.x;
     int i = blockDim.x * block_id + threadIdx.x + offset;
     int y;
-    
+    printf{"check error"};
     int indX, indY; 
     extern __shared__ double buffer[];
     if (i < SEGMENT_SIZE + offset) {
@@ -737,12 +737,16 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
     int indX, indY;
     //start send
     long long send_start = get_time();
-    check_error(cudaMemcpy(I_GPU, I, sizeof (unsigned char) *IszX * IszY*Nfr, cudaMemcpyHostToDevice));
-    check_error(cudaMemcpy(objxy_GPU, objxy, sizeof (int) *2 * countOnes, cudaMemcpyHostToDevice));
-    check_error(cudaMemcpy(weights_GPU, weights, sizeof (double) *Nparticles, cudaMemcpyHostToDevice));
-    check_error(cudaMemcpy(xj_GPU, xj, sizeof (double) *Nparticles, cudaMemcpyHostToDevice));
-    check_error(cudaMemcpy(yj_GPU, yj, sizeof (double) *Nparticles, cudaMemcpyHostToDevice));
-    check_error(cudaMemcpy(seed_GPU, seed, sizeof (int) *Nparticles, cudaMemcpyHostToDevice));
+    //for (int i = 0; i < N_STREAMS; i++) 
+	//{
+        
+        check_error(cudaMemcpy(I_GPU, I, sizeof (unsigned char) *IszX * IszY*Nfr, cudaMemcpyHostToDevice));
+        check_error(cudaMemcpy(objxy_GPU, objxy, sizeof (int) *2 * countOnes, cudaMemcpyHostToDevice));
+        check_error(cudaMemcpy(weights_GPU, weights, sizeof (double) *Nparticles, cudaMemcpyHostToDevice));
+        check_error(cudaMemcpy(xj_GPU, xj, sizeof (double) *Nparticles, cudaMemcpyHostToDevice));
+        check_error(cudaMemcpy(yj_GPU, yj, sizeof (double) *Nparticles, cudaMemcpyHostToDevice));
+        check_error(cudaMemcpy(seed_GPU, seed, sizeof (int) *Nparticles, cudaMemcpyHostToDevice));
+    //}
     long long send_end = get_time();
     printf("TIME TO SEND TO GPU: %f\n", elapsed_time(send_start, send_end));
     int num_blocks = ceil((double) Nparticles / (double) threads_per_block);
