@@ -306,7 +306,7 @@ __global__ void sum_kernel(double* partial_sums, int Nparticles,int offset) {
     int block_id = blockIdx.x;
     int i = blockDim.x * block_id + threadIdx.x;
 
-    if (i == 0 && offset = 0) {
+    if ((i == 0) && (offset = 0)) {
         int x;
         double sum = 0.0;
         int num_blocks = ceil((double) Nparticles / (double) threads_per_block);
