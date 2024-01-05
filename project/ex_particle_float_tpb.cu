@@ -145,7 +145,7 @@ float randn(int * seed, int index) {
     /*Box-Muller algorithm*/
     float u = randu(seed, index);
     float v = randu(seed, index);
-    float cosine = cos(2 * PI * v);
+    float cosine = cosf(2 * PI * v);
     float rt = -2 * logf(u);
     return sqrtf(rt) * cosine;
 }
@@ -155,7 +155,7 @@ float test_randn(int * seed, int index) {
     float pi = 3.14159265358979323846;
     float u = randu(seed, index);
     float v = randu(seed, index);
-    float cosine = cos(2 * pi * v);
+    float cosine = cosf(2 * pi * v);
     float rt = -2 * logf(u);
     return sqrtf(rt) * cosine;
 }
@@ -165,7 +165,7 @@ __device__ float d_randn(int * seed, int index) {
     float pi = 3.14159265359f;
     float u = d_randu(seed, index);
     float v = d_randu(seed, index);
-    float cosine = cos(2 * pi * v);
+    float cosine = cosf(2 * pi * v);
     float rt = -2 * logf(u);
     return sqrtf(rt) * cosine;
 }
