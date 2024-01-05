@@ -302,11 +302,11 @@ __global__ void normalize_weights_kernel(double * weights, int Nparticles, doubl
     }
 }
 
-__global__ void sum_kernel(double* partial_sums, int Nparticles) {
+__global__ void sum_kernel(double* partial_sums, int Nparticles,int offset) {
     int block_id = blockIdx.x;
     int i = blockDim.x * block_id + threadIdx.x;
 
-    if (i == 0) {
+    if (i == 0 && offset = 0) {
         int x;
         double sum = 0.0;
         int num_blocks = ceil((double) Nparticles / (double) threads_per_block);
@@ -762,15 +762,19 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
         int offset = i * SEGMENT_SIZE;
         
         likelihood_kernel << < num_blocks, threads_per_block ,threads_per_block*sizeof(double),streams[i]>> > (arrayX_GPU, arrayY_GPU, xj_GPU, yj_GPU, CDF_GPU, ind_GPU, objxy_GPU, likelihood_GPU, I_GPU, u_GPU, weights_GPU, Nparticles, countOnes, max_size, k, IszY, Nfr, seed_GPU, partial_sums,offset,SEGMENT_SIZE);
-        
-
-        sum_kernel << < num_blocks, threads_per_block,0,streams[0] >> > (partial_sums, Nparticles);
-        
+        sum_kernel << < num_blocks, threads_per_block,0,streams[0] >> > (partial_sums, Nparticles,offset);
+    }
+    for (k = 1; k < Nfr; k++) {
+    for (int i = 0; i < N_STREAMS; i++) 
+	{
+        int offset = i * SEGMENT_SIZE;
         normalize_weights_kernel << < num_blocks, threads_per_block,0,streams[i] >> > (weights_GPU, Nparticles, partial_sums, CDF_GPU, u_GPU, seed_GPU,offset,SEGMENT_SIZE);
-        
-        cudaThreadSynchronize();
+    }    
+    cudaDeviceSynchronize();
+    for (int i = 0; i < N_STREAMS; i++) 
+	{
         find_index_kernel << < num_blocks, threads_per_block,0,streams[i]  >> > (arrayX_GPU, arrayY_GPU, CDF_GPU, u_GPU, xj_GPU, yj_GPU, weights_GPU, Nparticles,offset,SEGMENT_SIZE);
-        
+    }    
     }
     cudaThreadSynchronize();
 
