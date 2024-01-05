@@ -637,7 +637,7 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
     float xe = roundfloat(IszY / 2.0);
     float ye = roundfloat(IszX / 2.0);
 
-    //expfected object locations, compared to center
+    //expected object locations, compared to center
     int radius = 5;
     int diameter = radius * 2 - 1;
     int * disk = (int*) malloc(diameter * diameter * sizeof (int));
@@ -720,6 +720,12 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
     check_error(cudaMemcpy(I_GPU, I, sizeof (unsigned char) *IszX * IszY*Nfr, cudaMemcpyHostToDevice));
     check_error(cudaMemcpy(objxy_GPU, objxy, sizeof (int) *2 * countOnes, cudaMemcpyHostToDevice));
     check_error(cudaMemcpy(weights_GPU, weights, sizeof (float) *Nparticles, cudaMemcpyHostToDevice));
+    cudaMemcpy(weights, weights_GPU, sizeof(float) * Nparticles, cudaMemcpyDeviceToHost);
+    printf("Initial Weights:\n");
+    for (int i = 0; i < Nparticles; i++) {
+    printf("%f ", weights[i]);
+    }
+    printf("\n");
     check_error(cudaMemcpy(xj_GPU, xj, sizeof (float) *Nparticles, cudaMemcpyHostToDevice));
     check_error(cudaMemcpy(yj_GPU, yj, sizeof (float) *Nparticles, cudaMemcpyHostToDevice));
     check_error(cudaMemcpy(seed_GPU, seed, sizeof (int) *Nparticles, cudaMemcpyHostToDevice));
@@ -733,9 +739,16 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
         likelihood_kernel << < num_blocks, threads_per_block >> > (arrayX_GPU, arrayY_GPU, xj_GPU, yj_GPU, CDF_GPU, ind_GPU, objxy_GPU, likelihood_GPU, I_GPU, u_GPU, weights_GPU, Nparticles, countOnes, max_size, k, IszY, Nfr, seed_GPU, partial_sums);
 
         sum_kernel << < num_blocks, threads_per_block >> > (partial_sums, Nparticles);
-
+        float sumWeights;
+        cudaMemcpy(&sumWeights, partial_sums, sizeof(float), cudaMemcpyDeviceToHost);
+        printf("Sum of weights before normalization: %f\n", sumWeights);
         normalize_weights_kernel << < num_blocks, threads_per_block >> > (weights_GPU, Nparticles, partial_sums, CDF_GPU, u_GPU, seed_GPU);
-        
+       cudaMemcpy(weights, weights_GPU, sizeof(float) * Nparticles, cudaMemcpyDeviceToHost);
+        printf("Weights after normalization:\n");
+        for (int i = 0; i < Nparticles; i++) {
+            printf("%f ", weights[i]);
+        }
+        printf("\n");
         find_index_kernel << < num_blocks, threads_per_block >> > (arrayX_GPU, arrayY_GPU, CDF_GPU, u_GPU, xj_GPU, yj_GPU, weights_GPU, Nparticles);
 
     }//end loop
