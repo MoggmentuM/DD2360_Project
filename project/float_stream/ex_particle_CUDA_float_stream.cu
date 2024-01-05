@@ -299,7 +299,7 @@ __global__ void normalize_weights_kernel(double * weights, int Nparticles, doubl
 
 __global__ void sum_kernel(double* partial_sums, int Nparticles) {
     int block_id = blockIdx.x;
-    int i = blockDim.x * block_id + threadIdx.x + offset;
+    int i = blockDim.x * block_id + threadIdx.x;
 
     if (i == 0) {
         int x;
@@ -753,13 +753,13 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
 	{
         int offset = i * SEGMENT_SIZE;
         
-        likelihood_kernel << < num_blocks, threads_per_block ,threads_per_block,stream[i]>> > (arrayX_GPU, arrayY_GPU, xj_GPU, yj_GPU, CDF_GPU, ind_GPU, objxy_GPU, likelihood_GPU, I_GPU, u_GPU, weights_GPU, Nparticles, countOnes, max_size, k, IszY, Nfr, seed_GPU, partial_sums,offset,SEGMENT_SIZE);
+        likelihood_kernel << < num_blocks, threads_per_block ,threads_per_block,streams[i]>> > (arrayX_GPU, arrayY_GPU, xj_GPU, yj_GPU, CDF_GPU, ind_GPU, objxy_GPU, likelihood_GPU, I_GPU, u_GPU, weights_GPU, Nparticles, countOnes, max_size, k, IszY, Nfr, seed_GPU, partial_sums,offset,SEGMENT_SIZE);
 
-        sum_kernel << < num_blocks, threads_per_block,0,stream[0] >> > (partial_sums, Nparticles);
+        sum_kernel << < num_blocks, threads_per_block,0,streams[0] >> > (partial_sums, Nparticles);
 
-        normalize_weights_kernel << < num_blocks, threads_per_block,0,stream[i] >> > (weights_GPU, Nparticles, partial_sums, CDF_GPU, u_GPU, seed_GPU,offset,SEGMENT_SIZE);
+        normalize_weights_kernel << < num_blocks, threads_per_block,0,streams[i] >> > (weights_GPU, Nparticles, partial_sums, CDF_GPU, u_GPU, seed_GPU,offset,SEGMENT_SIZE);
         
-        find_index_kernel << < num_blocks, threads_per_block >> > (arrayX_GPU, arrayY_GPU, CDF_GPU, u_GPU, xj_GPU, yj_GPU, weights_GPU, Nparticles,offset,SEGMENT_SIZE);
+        find_index_kernel << < num_blocks, threads_per_block,0,streams[i]  >> > (arrayX_GPU, arrayY_GPU, CDF_GPU, u_GPU, xj_GPU, yj_GPU, weights_GPU, Nparticles,offset,SEGMENT_SIZE);
     }
 
     }//end loop
@@ -821,7 +821,7 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
     cudaFreeHost(likelihood);
     cudaFreeHost(arrayX);
     cudaFreeHost(arrayY);
-    cudaFreeHoste(xj);
+    cudaFreeHost(xj);
     cudaFreeHost(yj);
     cudaFreeHost(CDF);
     cudaFreeHost(ind);
@@ -846,7 +846,7 @@ int main(int argc, char * argv[]) {
         return 0;
     }
 
-    int IszX, IszY, Nfr, Nparticles;
+    int IszX, IszY, Nfr, Nparticles,Nstream;
 
     //converting a string to a integer
     if (sscanf(argv[2], "%d", &IszX) == EOF) {
