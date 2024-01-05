@@ -162,7 +162,7 @@ float test_randn(int * seed, int index) {
 
 __device__ float d_randn(int * seed, int index) {
     //Box-Muller algortihm
-    float pi = 3.14159265358979323846;
+    float pi = 3.14159265359f;
     float u = d_randu(seed, index);
     float v = d_randu(seed, index);
     float cosine = cos(2 * pi * v);
