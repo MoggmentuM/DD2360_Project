@@ -626,9 +626,9 @@ void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparti
 
 			cudaMemcpyAsync(&yj[offset], &yj_GPU[offset], sizeof(double)*SEGMENT_SIZE, cudaMemcpyDeviceToHost, streams[i]);
 			cudaMemcpyAsync(&xj[offset], &xj_GPU[offset], sizeof(double)*SEGMENT_SIZE, cudaMemcpyDeviceToHost, streams[i]);
-			cudaStreamSynchronize(streams[i]);
+			//cudaStreamSynchronize(streams[i]);
     }
-
+    cudaThreadSynchronize();
 		//long long end_copy_back = get_time();
 		//printf("SENDING TO GPU TOOK: %lf\n", elapsed_time(start_copy, end_copy));
 		//printf("CUDA EXEC TOOK: %lf\n", elapsed_time(end_copy, start_copy_back));
