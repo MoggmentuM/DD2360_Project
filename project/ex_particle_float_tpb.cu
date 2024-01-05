@@ -74,8 +74,8 @@ void cuda_print_float_array(float *array_GPU, size_t size) {
 }
 
 /********************************
- * CALC LIKELIHOOD SUM
- * DETERMINES THE LIKELIHOOD SUM BASED ON THE FORMULA: SUM( (IK[IND] - 100)^2 - (IK[IND] - 228)^2)/ 100
+ * CALC  SUM
+ * DETERMINES THE  SUM BASED ON THE FORMULA: SUM( (IK[IND] - 100)^2 - (IK[IND] - 228)^2)/ 100
  * param 1 I 3D matrix
  * param 2 current ind array
  * param 3 length of ind array
@@ -737,7 +737,16 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
     for (k = 1; k < Nfr; k++) {
         
         likelihood_kernel << < num_blocks, threads_per_block >> > (arrayX_GPU, arrayY_GPU, xj_GPU, yj_GPU, CDF_GPU, ind_GPU, objxy_GPU, likelihood_GPU, I_GPU, u_GPU, weights_GPU, Nparticles, countOnes, max_size, k, IszY, Nfr, seed_GPU, partial_sums);
+            cudaDeviceSynchronize(); // Ensure kernel execution is finished
 
+    // Debugging: Check weights after likelihood_kernel
+    cudaMemcpy(weights, weights_GPU, sizeof(float) * Nparticles, cudaMemcpyDeviceToHost);
+    printf("Weights after likelihood_kernel:\n");
+    for (int i = 0; i < Nparticles; i++) {
+        if(isnan(weights[i])) {
+            printf("NaN detected at index %d\n", i);
+        }
+}
         sum_kernel << < num_blocks, threads_per_block >> > (partial_sums, Nparticles);
         float sumWeights;
         cudaMemcpy(&sumWeights, partial_sums, sizeof(float), cudaMemcpyDeviceToHost);
