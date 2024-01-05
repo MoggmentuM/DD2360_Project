@@ -280,8 +280,13 @@ __global__ void normalize_weights_kernel(double * weights, int Nparticles, doubl
     
     __syncthreads(); 
     
-    if (i == 0) {
-        cdfCalc(CDF, weights, Nparticles);
+    if (i == offset) {
+        //cdfCalc(CDF, weights, Nparticles);
+        int x;
+        CDF[0] = weights[0];
+        for (x = offset + 1; x < segment_size; x++) {
+            CDF[x] = weights[x] + CDF[x - 1];
+        }
         u[0] = (1 / ((double) (Nparticles))) * d_randu(seed, i); // do this to allow all threads in all blocks to use the same u1
     }
     
@@ -767,10 +772,10 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
         find_index_kernel << < num_blocks, threads_per_block,0,streams[i]  >> > (arrayX_GPU, arrayY_GPU, CDF_GPU, u_GPU, xj_GPU, yj_GPU, weights_GPU, Nparticles,offset,SEGMENT_SIZE);
         
     }
-    //cudaThreadSynchronize();
+    cudaThreadSynchronize();
 
     }//end loop
-    cudaThreadSynchronize();
+    //cudaThreadSynchronize();
     //block till kernels are finished
     
     long long back_time = get_time();
