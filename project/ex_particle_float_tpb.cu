@@ -12,7 +12,7 @@
 #define PI 3.1415926535897932
 
 const int threads_per_block = 256 // most optimal TPB.
-/**
+/*
 @var M value for Linear Congruential Generator (LCG); use GCC's value
  */
 
