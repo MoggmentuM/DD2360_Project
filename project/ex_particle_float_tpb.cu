@@ -365,7 +365,7 @@ __global__ void likelihood_kernel(float * arrayX, float * arrayY, float * xj, fl
             if (ind[i * countOnes + y] >= max_size)
                 ind[i * countOnes + y] = 0;
         }
-        likelihood[i] = calcLikelihoodSum(I, ind, countOnes, i);
+        likelihood[i] = calcLikelihoodSum(I, ind, countOnes, i, IszX * IszY * Nfr); 
         
         likelihood[i] = likelihood[i] / countOnes;
         
