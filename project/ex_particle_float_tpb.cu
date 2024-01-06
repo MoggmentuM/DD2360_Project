@@ -97,7 +97,7 @@ param1 CDF
 param2 weights
 param3 Nparticles
  *****************************/
-__device__ void cdfCalc(double * CDF, double * weights, int Nparticles) {
+__device__ void cdfCalc(float * CDF, float * weights, int Nparticles) {
     int x;
     CDF[0] = weights[0];
     for (x = 1; x < Nparticles; x++) {
@@ -218,7 +218,7 @@ __device__ int findIndexBin(double * CDF, int beginIndex, int endIndex, double v
  * Takes in a double and returns an integer that approximates to that double
  * @return if the mantissa < .5 => return value < input value; else return value > input value
  */
-__device__ double dev_round_double(double value) {
+__device__ float dev_round_float(float value) {
     int newValue = (int) (value);
     if (value - newValue < .5f)
         return newValue;
