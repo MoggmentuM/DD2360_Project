@@ -762,7 +762,7 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
     //for (k = 1; k < Nfr; k++) {
     //for (int i = 0; i < N_STREAMS; i++) 
 	//{
-        int offset = i * SEGMENT_SIZE;     
+        //int offset = i * SEGMENT_SIZE;     
         likelihood_kernel << < num_blocks2, threads_per_block ,threads_per_block*sizeof(double),streams[0]>> > (arrayX_GPU, arrayY_GPU, xj_GPU, yj_GPU, CDF_GPU, ind_GPU, objxy_GPU, likelihood_GPU, I_GPU, u_GPU, weights_GPU, Nparticles, countOnes, max_size, k, IszY, Nfr, seed_GPU, partial_sums,offset,SEGMENT_SIZE);
     //}
     sum_kernel << < num_blocks2, threads_per_block,0,streams[0]>> > (partial_sums, Nparticles);
