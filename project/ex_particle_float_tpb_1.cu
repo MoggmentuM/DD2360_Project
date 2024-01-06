@@ -109,7 +109,7 @@ __device__ void cdfCalc(double * CDF, double * weights, int Nparticles) {
  * GENERATES A UNIFORM DISTRIBUTION
  * returns a double representing a randomily generated number from a uniform distribution with range [0, 1)
  ******************************/
-__device__ double d_randu(int * seed, int index) {
+__device__ float d_randu(int * seed, int index) {
 
     int M = INT_MAX;
     int A = 1103515245;
@@ -117,7 +117,7 @@ __device__ double d_randu(int * seed, int index) {
     int num = A * seed[index] + C;
     seed[index] = num % M;
 
-    return fabs(seed[index] / ((double) M));
+    return fabs(seed[index] / ((float) M));
 }/**
 * Generates a uniformly distributed random number using the provided seed and GCC's settings for the Linear Congruential Generator (LCG)
 * @see http://en.wikipedia.org/wiki/Linear_congruential_generator
@@ -160,14 +160,14 @@ double test_randn(int * seed, int index) {
     return sqrt(rt) * cosine;
 }
 
-__device__ double d_randn(int * seed, int index) {
-    //Box-Muller algortihm
-    double pi = 3.14159265358979323846;
-    double u = d_randu(seed, index);
-    double v = d_randu(seed, index);
-    double cosine = cos(2 * pi * v);
-    double rt = -2 * log(u);
-    return sqrt(rt) * cosine;
+__device__ float d_randn(int * seed, int index) {
+    // Box-Muller algorithm
+    float pi = 3.14159265359f;  // Use 'f' to indicate a float literal
+    float u = d_randu(seed, index);
+    float v = d_randu(seed, index);
+    float cosine = cosf(2.0f * pi * v);   // Use 'f' for constants and functions
+    float rt = -2.0f * logf(u);           // Use 'f' for constants and functions
+    return sqrtf(rt) * cosine;
 }
 
 /****************************
@@ -236,7 +236,7 @@ __device__ double dev_round_double(double value) {
  * param7: weights
  * param8: Nparticles
  *****************************/
-__global__ void find_index_kernel(double * arrayX, double * arrayY, double * CDF, double * u, double * xj, double * yj, double * weights, int Nparticles) {
+__global__ void find_index_kernel(float * arrayX, float * arrayY, float * CDF, float * u, float * xj, float * yj, float * weights, int Nparticles) {
     int block_id = blockIdx.x;
     int i = blockDim.x * block_id + threadIdx.x;
 
@@ -258,16 +258,17 @@ __global__ void find_index_kernel(double * arrayX, double * arrayY, double * CDF
         xj[i] = arrayX[index];
         yj[i] = arrayY[index];
 
-        //weights[i] = 1 / ((double) (Nparticles)); //moved this code to the beginning of likelihood kernel
+        //weights[i] = 1.0f / ((float) (Nparticles)); // Use 'f' for constants (if needed)
 
     }
     __syncthreads();
 }
 
-__global__ void normalize_weights_kernel(double * weights, int Nparticles, double* partial_sums, double * CDF, double * u, int * seed) {
+
+__global__ void normalize_weights_kernel(float * weights, int Nparticles, float* partial_sums, float * CDF, float * u, int * seed) {
     int block_id = blockIdx.x;
     int i = blockDim.x * block_id + threadIdx.x;
-    __shared__ double u1, sumWeights;
+    __shared__ float u1, sumWeights;
     
     if(0 == threadIdx.x)
         sumWeights = partial_sums[0];
@@ -282,7 +283,7 @@ __global__ void normalize_weights_kernel(double * weights, int Nparticles, doubl
     
     if (i == 0) {
         cdfCalc(CDF, weights, Nparticles);
-        u[0] = (1 / ((double) (Nparticles))) * d_randu(seed, i); // do this to allow all threads in all blocks to use the same u1
+        u[0] = (1.0f / ((float) (Nparticles))) * d_randu(seed, i); // Use 'f' for constants
     }
     
     __syncthreads();
@@ -293,24 +294,26 @@ __global__ void normalize_weights_kernel(double * weights, int Nparticles, doubl
     __syncthreads();
         
     if (i < Nparticles) {
-        u[i] = u1 + i / ((double) (Nparticles));
+        u[i] = u1 + i / ((float) (Nparticles)); // Use 'f' for constants
     }
 }
 
-__global__ void sum_kernel(double* partial_sums, int Nparticles) {
+
+__global__ void sum_kernel(float* partial_sums, int Nparticles) {
     int block_id = blockIdx.x;
     int i = blockDim.x * block_id + threadIdx.x;
 
     if (i == 0) {
         int x;
-        double sum = 0.0;
-        int num_blocks = ceil((double) Nparticles / (double) threads_per_block);
+        float sum = 0.0f;
+        int num_blocks = ceilf((float) Nparticles / (float) threads_per_block);
         for (x = 0; x < num_blocks; x++) {
             sum += partial_sums[x];
         }
         partial_sums[0] = sum;
     }
 }
+
 
 /*****************************
  * CUDA Likelihood Kernel Function to replace FindIndex
@@ -330,31 +333,30 @@ __global__ void sum_kernel(double* partial_sums, int Nparticles) {
  * param11: IszY
  * param12: Nfr
  *****************************/
-__global__ void likelihood_kernel(double * arrayX, double * arrayY, double * xj, double * yj, double * CDF, int * ind, int * objxy, double * likelihood, unsigned char * I, double * u, double * weights, int Nparticles, int countOnes, int max_size, int k, int IszY, int Nfr, int *seed, double* partial_sums) {
+__global__ void likelihood_kernel(float * arrayX, float * arrayY, float * xj, float * yj, float * CDF, int * ind, int * objxy, float * likelihood, unsigned char * I, float * u, float * weights, int Nparticles, int countOnes, int max_size, int k, int IszY, int Nfr, int *seed, float* partial_sums) {
     int block_id = blockIdx.x;
     int i = blockDim.x * block_id + threadIdx.x;
     int y;
     
     int indX, indY; 
-    __shared__ double buffer[512];
+    __shared__ float buffer[512];
     if (i < Nparticles) {
         arrayX[i] = xj[i]; 
         arrayY[i] = yj[i]; 
 
-        weights[i] = 1 / ((double) (Nparticles)); //Donnie - moved this line from end of find_index_kernel to prevent all weights from being reset before calculating position on final iteration.
-
-        arrayX[i] = arrayX[i] + 1.0 + 5.0 * d_randn(seed, i);
-        arrayY[i] = arrayY[i] - 2.0 + 2.0 * d_randn(seed, i);
+        weights[i] = 1.0f / ((float) (Nparticles)); // Use 'f' for constants
         
+        arrayX[i] = arrayX[i] + 1.0f + 5.0f * d_randn(seed, i);
+        arrayY[i] = arrayY[i] - 2.0f + 2.0f * d_randn(seed, i);
     }
 
     __syncthreads();
 
     if (i < Nparticles) {
         for (y = 0; y < countOnes; y++) {
-            //added dev_round_double() to be consistent with roundDouble
-            indX = dev_round_double(arrayX[i]) + objxy[y * 2 + 1];
-            indY = dev_round_double(arrayY[i]) + objxy[y * 2];
+            //added dev_round_float() to be consistent with roundFloat
+            indX = dev_round_float(arrayX[i]) + objxy[y * 2 + 1];
+            indY = dev_round_float(arrayY[i]) + objxy[y * 2];
             
             ind[i * countOnes + y] = abs(indX * IszY * Nfr + indY * Nfr + k);
             if (ind[i * countOnes + y] >= max_size)
@@ -362,18 +364,17 @@ __global__ void likelihood_kernel(double * arrayX, double * arrayY, double * xj,
         }
         likelihood[i] = calcLikelihoodSum(I, ind, countOnes, i);
         
-        likelihood[i] = likelihood[i] / countOnes;
+        likelihood[i] = likelihood[i] / (float)countOnes;
         
-        weights[i] = weights[i] * exp(likelihood[i]); //Donnie Newell - added the missing exponential function call
+        weights[i] = weights[i] * expf(likelihood[i]); // Use 'f' for exponential function
         
     }
 
-    buffer[threadIdx.x] = 0.0;
+    buffer[threadIdx.x] = 0.0f;
 
     __syncthreads();
 
     if (i < Nparticles) {
-
         buffer[threadIdx.x] = weights[i];
     }
 
@@ -393,20 +394,19 @@ __global__ void likelihood_kernel(double * arrayX, double * arrayY, double * xj,
     }
     
     __syncthreads();
-
-    
 }
+
 
 /** 
  * Takes in a double and returns an integer that approximates to that double
  * @return if the mantissa < .5 => return value < input value; else return value > input value
  */
-double roundDouble(double value) {
+float roundFloat(float value) {
     int newValue = (int) (value);
-    if (value - newValue < .5)
-        return newValue;
+    if (value - newValue < 0.5f)
+        return (float)newValue;
     else
-        return newValue++;
+        return (float)(newValue + 1);
 }
 
 /**
@@ -561,8 +561,8 @@ void videoSequence(unsigned char * I, int IszX, int IszY, int Nfr, int * seed) {
     int k;
     int max_size = IszX * IszY * Nfr;
     /*get object centers*/
-    int x0 = (int) roundDouble(IszY / 2.0);
-    int y0 = (int) roundDouble(IszX / 2.0);
+    int x0 = (int) roundFloat(IszY / 2.0);
+    int y0 = (int) roundFloat(IszX / 2.0);
     I[x0 * IszY * Nfr + y0 * Nfr + 0] = 1;
 
     /*move point*/
