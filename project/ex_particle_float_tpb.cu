@@ -342,7 +342,7 @@ __global__ void likelihood_kernel(float * arrayX, float * arrayY, float * xj, fl
         arrayY[i] = yj[i]; 
 
         weights[i] = 1 / ((float) (Nparticles)); //Donnie - moved this line from end of find_index_kernel to prevent all weights from being reset before calculating position on final iteration.
-
+        printf();
         arrayX[i] = arrayX[i] + 1.0 + 5.0 * d_randn(seed, i);
         arrayY[i] = arrayY[i] - 2.0 + 2.0 * d_randn(seed, i);
         
