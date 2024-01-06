@@ -779,7 +779,7 @@ float *CDF = (float *)malloc(sizeof(float) * Nparticles);
     }
     printf("XE: %lf\n", xe);
     printf("YE: %lf\n", ye);
-    double distance = sqrt(pow((double) (xe - (int) roundDouble(IszY / 2.0)), 2) + pow((double) (ye - (int) roundDouble(IszX / 2.0)), 2));
+    double distance = sqrt(pow((double) (xe - (int) roundFloat(IszY / 2.0)), 2) + pow((double) (ye - (int) roundFloat(IszX / 2.0)), 2));
     printf("%lf\n", distance);
 
     //CUDA freeing of memory
