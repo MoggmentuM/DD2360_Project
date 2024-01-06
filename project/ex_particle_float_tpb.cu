@@ -635,8 +635,8 @@ int findIndex(double * CDF, int lengthCDF, double value) {
 void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, int Nparticles) {
     int max_size = IszX * IszY*Nfr;
     //original particle centroid
-    double xe = roundDouble(IszY / 2.0);
-    double ye = roundDouble(IszX / 2.0);
+    double xe = roundFloat(IszY / 2.0);
+    double ye = roundFloat(IszX / 2.0);
 
     //expected object locations, compared to center
     int radius = 5;
