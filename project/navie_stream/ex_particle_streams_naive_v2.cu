@@ -598,7 +598,7 @@ void particleFilter(int * I, int IszX, int IszY, int Nfr, int * seed, int Nparti
 
 		printf("TIME TO CALC U TOOK: %f\n", elapsed_time(cum_sum, u_time));
 		long long start_copy = get_time();
-		int num_blocks = ceil((double) Nparticles/(double) threads_per_block);
+		int num_blocks = ceil((double) Nparticles/((double) threads_per_block*(double)N_STREAMS));
 		//CUDA memory copying from CPU memory to GPU memory
 		// cudaMemcpy(arrayX_GPU, arrayX, sizeof(double)*Nparticles, cudaMemcpyHostToDevice);
 		// cudaMemcpy(arrayY_GPU, arrayY, sizeof(double)*Nparticles, cudaMemcpyHostToDevice);
