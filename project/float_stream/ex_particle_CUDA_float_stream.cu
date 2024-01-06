@@ -756,7 +756,7 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
     long long send_end = get_time();
     printf("TIME TO SEND TO GPU: %f\n", elapsed_time(send_start, send_end));
     int num_blocks1 = ceil((double) Nparticles / ((double) threads_per_block*(double) N_STREAMS));
-    int num_blocks2 = ceil(double) Nparticles / (double) threads_per_block;
+    int num_blocks2 = ceil((double) Nparticles / (double) threads_per_block);
 
 
     //for (k = 1; k < Nfr; k++) {
