@@ -574,8 +574,8 @@ void videoSequence(unsigned char * I, int IszX, int IszY, int Nfr, int * seed) {
     /*move point*/
     int xk, yk, pos;
     for (k = 1; k < Nfr; k++) {
-        xk = fabs(x0 + (k-1));
-        yk = fabs(y0 - 2 * (k-1));
+        xk = abs(x0 + (k-1));
+        yk = abs(y0 - 2 * (k-1));
         pos = yk * IszY * Nfr + xk * Nfr + k;
         if (pos >= max_size)
             pos = 0;
