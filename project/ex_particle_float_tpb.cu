@@ -659,31 +659,32 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
         weights[x] = 1 / ((double) (Nparticles));
     }
 
-    //initial likelihood to 0.0
-    double * likelihood = (double *) malloc(sizeof (double) *Nparticles);
-    double * arrayX = (double *) malloc(sizeof (double) *Nparticles);
-    double * arrayY = (double *) malloc(sizeof (double) *Nparticles);
-    double * xj = (double *) malloc(sizeof (double) *Nparticles);
-    double * yj = (double *) malloc(sizeof (double) *Nparticles);
-    double * CDF = (double *) malloc(sizeof (double) *Nparticles);
+// Initial likelihood to 0.0
+float *likelihood = (float *)malloc(sizeof(float) * Nparticles);
+float *arrayX = (float *)malloc(sizeof(float) * Nparticles);
+float *arrayY = (float *)malloc(sizeof(float) * Nparticles);
+float *xj = (float *)malloc(sizeof(float) * Nparticles);
+float *yj = (float *)malloc(sizeof(float) * Nparticles);
+float *CDF = (float *)malloc(sizeof(float) * Nparticles);
+
 
     //GPU copies of arrays
-    double * arrayX_GPU;
-    double * arrayY_GPU;
-    double * xj_GPU;
-    double * yj_GPU;
-    double * CDF_GPU;
-    double * likelihood_GPU;
+    float * arrayX_GPU;
+    float * arrayY_GPU;
+    float * xj_GPU;
+    float * yj_GPU;
+    float * CDF_GPU;
+    float * likelihood_GPU;
     unsigned char * I_GPU;
-    double * weights_GPU;
+    float * weights_GPU;
     int * objxy_GPU;
 
     int * ind = (int*) malloc(sizeof (int) *countOnes * Nparticles);
     int * ind_GPU;
-    double * u = (double *) malloc(sizeof (double) *Nparticles);
-    double * u_GPU;
+    float * u = (float *) malloc(sizeof (float) *Nparticles);
+    float * u_GPU;
     int * seed_GPU;
-    double* partial_sums;
+    float* partial_sums;
 
     //CUDA memory allocation
     check_error(cudaMalloc((void **) &arrayX_GPU, sizeof (double) *Nparticles));
