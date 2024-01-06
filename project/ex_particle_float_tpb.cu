@@ -356,7 +356,7 @@ __global__ void likelihood_kernel(float * arrayX, float * arrayY, float * xj, fl
             indX = dev_round_float(arrayX[i]) + objxy[y * 2 + 1];
             indY = dev_round_float(arrayY[i]) + objxy[y * 2];
             
-            ind[i * countOnes + y] = fabs(indX * IszY * Nfr + indY * Nfr + k);
+            ind[i * countOnes + y] = abs(indX * IszY * Nfr + indY * Nfr + k);
             if (ind[i * countOnes + y] >= max_size)
                 ind[i * countOnes + y] = 0;
         }
