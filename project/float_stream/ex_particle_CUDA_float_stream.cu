@@ -335,7 +335,7 @@ __global__ void sum_kernel(double* partial_sums, int Nparticles) {
  * param11: IszY
  * param12: Nfr
  *****************************/
-__global__ void likelihood_kernel(double * arrayX, double * arrayY, double * xj, double * yj, double * CDF, int * ind, int * objxy, double * likelihood, unsigned char * I, double * u, double * weights, int Nparticles, int countOnes, int max_size, int k, int IszY, int Nfr, int *seed, double* partial_sums,int offset,int segment_size) {
+__global__ void likelihood_kernel(double * arrayX, double * arrayY, double * xj, double * yj, double * CDF, int * ind, int * objxy, double * likelihood, unsigned char * I, double * u, double * weights, int Nparticles, int countOnes, int max_size, int k, int IszY, int Nfr, int *seed, double* partial_sums){//,int offset,int segment_size) {
     int block_id = blockIdx.x;
     int i = blockDim.x * block_id + threadIdx.x + offset;
     int y;
@@ -757,13 +757,16 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
     printf("TIME TO SEND TO GPU: %f\n", elapsed_time(send_start, send_end));
     int num_blocks1 = ceil((double) Nparticles / ((double) threads_per_block*(double) N_STREAMS));
     int num_blocks2 = ceil((double) Nparticles / (double) threads_per_block);
+    for (k = 1; k < Nfr; k++) {
 
+    likelihood_kernel << < num_blocks2, threads_per_block ,threads_per_block*sizeof(double),streams[0]>> > (arrayX_GPU, arrayY_GPU, xj_GPU, yj_GPU, CDF_GPU, ind_GPU, objxy_GPU, likelihood_GPU, I_GPU, u_GPU, weights_GPU, Nparticles, countOnes, max_size, k, IszY, Nfr, seed_GPU, partial_sums);
 
     //for (k = 1; k < Nfr; k++) {
     //for (int i = 0; i < N_STREAMS; i++) 
 	//{
-        //int offset = i * SEGMENT_SIZE;     
-        likelihood_kernel << < num_blocks2, threads_per_block ,threads_per_block*sizeof(double),streams[0]>> > (arrayX_GPU, arrayY_GPU, xj_GPU, yj_GPU, CDF_GPU, ind_GPU, objxy_GPU, likelihood_GPU, I_GPU, u_GPU, weights_GPU, Nparticles, countOnes, max_size, k, IszY, Nfr, seed_GPU, partial_sums,offset,SEGMENT_SIZE);
+        //int offset = i * SEGMENT_SIZE;   
+  
+        //likelihood_kernel << < num_blocks2, threads_per_block ,threads_per_block*sizeof(double),streams[0]>> > (arrayX_GPU, arrayY_GPU, xj_GPU, yj_GPU, CDF_GPU, ind_GPU, objxy_GPU, likelihood_GPU, I_GPU, u_GPU, weights_GPU, Nparticles, countOnes, max_size, k, IszY, Nfr, seed_GPU, partial_sums,offset,SEGMENT_SIZE);
     //}
     sum_kernel << < num_blocks2, threads_per_block,0,streams[0]>> > (partial_sums, Nparticles);
     normalize_weights_kernel << < num_blocks2, threads_per_block,0,streams[0]>> > (weights_GPU, Nparticles, partial_sums, CDF_GPU, u_GPU, seed_GPU);   
