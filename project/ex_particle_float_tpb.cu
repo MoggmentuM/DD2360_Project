@@ -81,14 +81,15 @@ void cuda_print_double_array(double *array_GPU, size_t size) {
  * param 3 length of ind array
  * returns a double representing the sum
  ********************************/
-__device__ double calcLikelihoodSum(unsigned char * I, int * ind, int numOnes, int index) {
-    double likelihoodSum = 0.0;
-    int x;
-    for (x = 0; x < numOnes; x++)
-        likelihoodSum += (pow((double) (I[ind[index * numOnes + x]] - 100), 2) - pow((double) (I[ind[index * numOnes + x]] - 228), 2)) / 50.0;
-    return likelihoodSum;
+__device__ float calcLikelihoodSum(unsigned char * I, int * ind, int numOnes, int index) {
+  float likelihoodSum = 0.0f;  // Initialize with float
+  int x;
+  for (x = 0; x < numOnes; x++) {
+    // Use float literals and cast I[ind[index * numOnes + x]] to float
+    likelihoodSum += (powf((float)I[ind[index * numOnes + x]] - 100.0f, 2.0f) - powf((float)I[ind[index * numOnes + x]] - 228.0f, 2.0f)) / 50.0f;
+  }
+  return likelihoodSum;  // Return a float
 }
-
 /****************************
 CDF CALCULATE
 CALCULATES CDF
@@ -181,7 +182,7 @@ __device__ double updateWeights(double * weights, double * likelihood, int Npart
     int x;
     double sum = 0;
     for (x = 0; x < Nparticles; x++) {
-        weights[x] = weights[x] * exp(likelihood[x]);
+        weights[x] = weights[x] * expf(likelihood[x]);
         sum += weights[x];
     }
     return sum;
