@@ -337,7 +337,8 @@ __global__ void sum_kernel(double* partial_sums, int Nparticles) {
  *****************************/
 __global__ void likelihood_kernel(double * arrayX, double * arrayY, double * xj, double * yj, double * CDF, int * ind, int * objxy, double * likelihood, unsigned char * I, double * u, double * weights, int Nparticles, int countOnes, int max_size, int k, int IszY, int Nfr, int *seed, double* partial_sums){//,int offset,int segment_size) {
     int block_id = blockIdx.x;
-    int i = blockDim.x * block_id + threadIdx.x + offset;
+    //int i = blockDim.x * block_id + threadIdx.x + offset;
+    int i = blockDim.x * block_id + threadIdx.x;
     int y;
     int indX, indY; 
     extern __shared__ double buffer[];
@@ -378,7 +379,8 @@ __global__ void likelihood_kernel(double * arrayX, double * arrayY, double * xj,
 
     __syncthreads();
 
-    if ((i < segment_size + offset) && (i < Nparticles)) {
+    //if ((i < segment_size + offset) && (i < Nparticles)) {
+    if ( (i < Nparticles)) {
 
         buffer[threadIdx.x] = weights[i];
     }
