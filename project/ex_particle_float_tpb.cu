@@ -335,7 +335,7 @@ __global__ void sum_kernel(float* partial_sums, int Nparticles) {
  * param11: IszY
  * param12: Nfr
  *****************************/
-__global__ void likelihood_kernel(float * arrayX, float * arrayY, float * xj, float * yj, float * CDF, int * ind, int * objxy, float * likelihood, unsigned char * I, float * u, float * weights, int Nparticles, int countOnes, int max_size, int k, int IszY, int Nfr, int *seed, float* partial_sums) {
+__global__ void likelihood_kernel(float * arrayX, float * arrayY, float * xj, float * yj, float * CDF, int * ind, int * objxy, float * likelihood, unsigned char * I, float * u, float * weights, int Nparticles, int countOnes, int max_size, int k, int IszY, int Nfr, int *seed, float* partial_sums, int IszX)
     int block_id = blockIdx.x;
     int i = blockDim.x * block_id + threadIdx.x;
     int y;
@@ -365,7 +365,8 @@ __global__ void likelihood_kernel(float * arrayX, float * arrayY, float * xj, fl
             if (ind[i * countOnes + y] >= max_size)
                 ind[i * countOnes + y] = 0;
         }
-        likelihood[i] = calcLikelihoodSum(I, ind, countOnes, i, IszX * IszY * Nfr); 
+      likelihood[i] = calcLikelihoodSum(I, ind, countOnes, i, IszX * IszY * Nfr);
+
         
         likelihood[i] = likelihood[i] / countOnes;
         
@@ -741,8 +742,8 @@ void particleFilter(unsigned char * I, int IszX, int IszY, int Nfr, int * seed, 
 
     for (k = 1; k < Nfr; k++) {
         
-        likelihood_kernel << < num_blocks, threads_per_block >> > (arrayX_GPU, arrayY_GPU, xj_GPU, yj_GPU, CDF_GPU, ind_GPU, objxy_GPU, likelihood_GPU, I_GPU, u_GPU, weights_GPU, Nparticles, countOnes, max_size, k, IszY, Nfr, seed_GPU, partial_sums);
-            cudaDeviceSynchronize(); // Ensure kernel execution is finished
+       likelihood_kernel<<<num_blocks, threads_per_block>>>(arrayX_GPU, arrayY_GPU, xj_GPU, yj_GPU, CDF_GPU, ind_GPU, objxy_GPU, likelihood_GPU, I_GPU, u_GPU, weights_GPU, Nparticles, countOnes, max_size, k, IszY, Nfr, seed_GPU, partial_sums, IszX);
+      cudaDeviceSynchronize(); // Ensure kernel execution is finished
 
     // Debugging: Check weights after likelihood_kernel
     cudaMemcpy(weights, weights_GPU, sizeof(float) * Nparticles, cudaMemcpyDeviceToHost);
