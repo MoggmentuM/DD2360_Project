@@ -403,7 +403,7 @@ __global__ void likelihood_kernel(float * arrayX, float * arrayY, float * xj, fl
  */
 float roundfloat(float value) {
     int newValue = (int) (value);
-    if (value - newValue < .5)
+    if (value - newValue < .5f)
         return newValue;
     else
         return newValue++;
