@@ -81,14 +81,19 @@ void cuda_print_float_array(float *array_GPU, size_t size) {
  * param 3 length of ind array
  * returns a float representing the sum
  ********************************/
-__device__ float calcLikelihoodSum(unsigned char * I, int * ind, int numOnes, int index) {
+__device__ float calcLikelihoodSum(unsigned char * I, int * ind, int numOnes, int index, int I_size) { // Add I_size parameter
     float likelihoodSum = 0.0f;
     int x;
-    for (x = 0; x < numOnes; x++)
-        likelihoodSum += (powf((float) (I[ind[index * numOnes + x]] - 100), 2) - powf((float) (I[ind[index * numOnes + x]] - 228), 2)) / 50.0f;
+    for (x = 0; x < numOnes; x++) {
+        int current_index = ind[index * numOnes + x];
+        if (current_index < 0 || current_index >= I_size) { // Check boundary
+            printf("Out of bounds access: %d\n", current_index); // Debug print
+            continue; // Skip this iteration
+        }
+        likelihoodSum += (powf((float) (I[current_index] - 100), 2) - powf((float) (I[current_index] - 228), 2)) / 50.0f;
+    }
     return likelihoodSum;
 }
-
 /****************************
 CDF CALCULATE
 CALCULATES CDF
