@@ -391,7 +391,7 @@ __global__ void sum1(double* weights, double* partial_sums,int Nparticles){
     if ( i < Nparticles) {
 
         buffer[threadIdx.x] = weights[i];
-    }
+    
     //if(i==0)
     //printf("partial_sum:%f",weights[0]);
     __syncthreads();
@@ -405,10 +405,11 @@ __global__ void sum1(double* weights, double* partial_sums,int Nparticles){
         __syncthreads();
             
     }
+    
     if (threadIdx.x == 0) {
         partial_sums[blockIdx.x] = buffer[0];
     }
-    
+}
     __syncthreads();    
 
 }
