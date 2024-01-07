@@ -271,7 +271,7 @@ __global__ void normalize_weights_kernel(double * weights, int Nparticles, doubl
     
     if(0 == threadIdx.x)
         sumWeights = partial_sums[0];
-    
+    printf("sumWeights:%f",sumWeights)
     __syncthreads();
     
     if (i < Nparticles) {
@@ -397,7 +397,7 @@ __global__ void likelihood_kernel(double * arrayX, double * arrayY, double * xj,
             
     }
     if (threadIdx.x == 0) {
-        partial_sums[blockIdx.x+i_streams] = buffer[0];
+        partial_sums[blockIdx.x + i_streams] = buffer[0];
     }
     
     __syncthreads();    
