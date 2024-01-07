@@ -376,7 +376,8 @@ __global__ void likelihood_kernel(double * arrayX, double * arrayY, double * xj,
     }
 
     buffer[threadIdx.x] = 0.0;
-
+    if(i==0)
+     printf("partial_sum:%f",buffer[0]);
     __syncthreads();
 
     if ((i < segment_size + offset) && (i < Nparticles)) {
@@ -401,8 +402,7 @@ __global__ void likelihood_kernel(double * arrayX, double * arrayY, double * xj,
     }
     
     __syncthreads();    
-    if(i==0)
-     printf("partial_sum:%f",partial_sums[0]);
+
 }
 
 /** 
