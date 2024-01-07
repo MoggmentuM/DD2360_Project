@@ -271,7 +271,7 @@ __global__ void normalize_weights_kernel(double * weights, int Nparticles, doubl
     
     if(0 == threadIdx.x)
         sumWeights = partial_sums[0];
-    printf("sumWeights:%f",sumWeights)
+    printf("sumWeights:%f",sumWeights);
     __syncthreads();
     
     if (i < Nparticles) {
