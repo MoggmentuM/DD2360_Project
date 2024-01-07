@@ -377,7 +377,7 @@ __global__ void likelihood_kernel(double * arrayX, double * arrayY, double * xj,
     __syncthreads();
 }
 
-__global__ sum1{double * weights, double *partial_sums,int Nparticles}{
+__global__ sum1(double * weights, double *partial_sums,int Nparticles){
 
     extern __shared__ double buffer[];
 
