@@ -255,7 +255,7 @@ __global__ void find_index_kernel(double * arrayX, double * arrayY, double * CDF
 			    index = Nparticles -1;
 		}
 		*/
-		index = findIndexBin(CDF, 0, Nparticles - 1, u[h]);
+		index = findIndexBin(CDF, 0, Nparticles - 1, u[i]);
 		if(index == -1){
 			index = Nparticles -1;
 	    }
