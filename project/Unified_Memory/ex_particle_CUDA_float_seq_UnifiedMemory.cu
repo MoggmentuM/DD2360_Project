@@ -1,6 +1,5 @@
 /**
- * @file ex_particle_float_UnifiedMemory.cu
- * @ex_particle_streams_float_SharedMemory.cu
+ * @file ex_particle_CUDA_float_seq_UnifiedMemory.cu
  * @brief Modified the float version of the code: 
  * @date 2023-01-06
  */
