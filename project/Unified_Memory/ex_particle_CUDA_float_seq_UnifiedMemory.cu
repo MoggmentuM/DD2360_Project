@@ -1,3 +1,9 @@
+/**
+ * @file ex_particle_float_UnifiedMemory.cu
+ * @ex_particle_streams_float_SharedMemory.cu
+ * @brief Modified the float version of the code: 
+ * @date 2023-01-06
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
