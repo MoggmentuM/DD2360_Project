@@ -1,12 +1,7 @@
 /**
- * @file ex_particle_streams_naive.cu
- * @author Valeria Grotto (vgrotto@kth.se)
- * @brief Modified the naive version of the code to support parallelism with pinned memory and CUDA streams.
- * @version 0.1
- * @date 2023-12-16
- * 
- * @copyright Copyright (c) 2023
- * DD2360 - Applied GPU programming at KTH
+ * @ex_particle_CUDA_float_stream_copy.cu
+ * @brief Modified the float version of the code: Add cuda stream and pinned memory
+ * @date 2023-01-06
  */
 
 #include <stdio.h>
