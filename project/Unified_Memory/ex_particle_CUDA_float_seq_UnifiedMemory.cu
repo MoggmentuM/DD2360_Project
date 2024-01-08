@@ -1,3 +1,8 @@
+/**
+ * @file ex_particle_CUDA_float_seq_UnifiedMemory.cu
+ * @brief Modified the float version of the code: 
+ * @date 2023-01-06
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
