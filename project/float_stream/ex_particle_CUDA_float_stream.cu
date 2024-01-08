@@ -1,5 +1,6 @@
 /**
  * @ex_particle_CUDA_float_stream_copy.cu
+ * @author Ruimin Shi
  * @brief Modified the float version of the code: Add cuda stream and pinned memory
  * @this version is used for trying and can not be compiled successfully
  * @date 2023-01-06
