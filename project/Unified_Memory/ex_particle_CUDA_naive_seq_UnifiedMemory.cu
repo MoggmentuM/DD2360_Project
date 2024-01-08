@@ -1,5 +1,6 @@
 /**
- * @file ex_particle_CUDA_naive_seq_UnifiedMemory.cu
+ * @ex_particle_CUDA_naive_seq_UnifiedMemory.cu
+ * @author Bowen Tian
  * @brief Modified the float version of the code: Replaced explicit data movement with unified memory and added Prefetch operation to it. ---
  * @---To cancel Prefetch, simply comment it out
  * @date 2023-01-06
