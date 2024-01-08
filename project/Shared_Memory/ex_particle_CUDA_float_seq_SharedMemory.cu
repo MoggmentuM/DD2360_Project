@@ -11,6 +11,8 @@
 #define BLOCK_Y 16
 #define PI 3.1415926535897932
 
+//This is the implementation of shared memory for the float version of ParticleFilter.
+
 const int threads_per_block = 512;
 
 /**
