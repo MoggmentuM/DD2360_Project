@@ -384,8 +384,7 @@ __global__ void likelihood_kernel(double * arrayX, double * arrayY, double * xj,
 
         buffer[threadIdx.x] = weights[i];
     }
-    if(i==0)
-    printf("partial_sum:%f",weights[0]);
+   
     __syncthreads();
 
     //this doesn't account for the last block that isn't full
