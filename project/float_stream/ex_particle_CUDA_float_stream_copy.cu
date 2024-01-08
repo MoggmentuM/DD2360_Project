@@ -242,23 +242,25 @@ __global__ void find_index_kernel(double * arrayX, double * arrayY, double * CDF
 
     if ((i < segment_size + offset) && (i < Nparticles)) {
 
-        int index = -1;
-        int x;
-
-        for (x = 0; x < Nparticles; x++) {
-            if (CDF[x] >= u[i]) {
-                index = x;
-                break;
-            }
-        }
-        if (index == -1) {
-            index = Nparticles - 1;
-        }
-
-        xj[i] = arrayX[index];
-        yj[i] = arrayY[index];
-
-        //weights[i] = 1 / ((double) (Nparticles)); //moved this code to the beginning of likelihood kernel
+        int index = - 1;
+		int x;
+		/*
+		for(x = 0; x < Nparticles; x++){
+			if(CDF[x] >= u[h]){
+				index = x;
+				break;
+			}
+		}
+		if(index == -1){
+			    index = Nparticles -1;
+		}
+		*/
+		index = findIndexBin(CDF, 0, Nparticles - 1, u[h]);
+		if(index == -1){
+			index = Nparticles -1;
+	    }
+		xj[h] = arrayX[index];
+		yj[h] = arrayY[index]; //moved this code to the beginning of likelihood kernel
 
     }
     __syncthreads();
