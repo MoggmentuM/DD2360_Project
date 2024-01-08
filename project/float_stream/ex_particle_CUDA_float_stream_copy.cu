@@ -259,8 +259,8 @@ __global__ void find_index_kernel(double * arrayX, double * arrayY, double * CDF
 		if(index == -1){
 			index = Nparticles -1;
 	    }
-		xj[h] = arrayX[index];
-		yj[h] = arrayY[index]; //moved this code to the beginning of likelihood kernel
+		xj[i] = arrayX[index];
+		yj[i] = arrayY[index]; //moved this code to the beginning of likelihood kernel
 
     }
     __syncthreads();
