@@ -8,7 +8,7 @@ Step 2:
 make -C /DD2360_Project/project/ (make -C /content/DD2360_Project/project/ for Google Colab).
 
 Step 3:
-To run the code, choose which version of the benchmark you want to run. 
+To run the code, choose which version of the benchmark you want to run.
 
 Original version of ParticleFilter (naive): <br>
 ./DD2360_Project/project/particlefilter_original/particlefilter_naive -x (input_x) -y (input_y) -z (input_z) -np (input_np)
