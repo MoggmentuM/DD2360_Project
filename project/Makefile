@@ -1,16 +1,15 @@
 #makefile
 
-include make.config
+include ../make.config
 
 CC := $(CUDA_DIR)/bin/nvcc
 
 INCLUDE := $(CUDA_DIR)/include
 
-all:
-    +$(MAKE) -C cuRAND
-    +$(MAKE) -C float_stream
-    +$(MAKE) -C naive_stream
-		+$(MAKE) -C particlefilter_original
-    +$(MAKE) -C shared_memory
-    +$(MAKE) -C unified_memory
+all: shared
 
+shared: ex_particle_CUDA_float_seq_SharedMemory.cu
+	$(CC) -I$(INCLUDE) -L$(CUDA_LIB_DIR) -lcuda -g -lm -O3 -use_fast_math -arch sm_75 ex_particle_CUDA_float_seq_SharedMemory.cu -o ex_particle_CUDA_float_seq_SharedMemory
+	
+clean:
+	rm ex_particle_CUDA_float_seq_SharedMemory
