@@ -22,4 +22,4 @@ Float stream: ./DD2360_Project/project/float_stream/ex_particle_CUDA_float_strea
 
 Naive stream (first version):./DD2360_Project/project/naive_stream/particlefilter_streams -x <x> -y <y> -z <z> -np <np> -nstream <nstream>
 Naive stream (second version): ./DD2360_Project/project/naive_stream/particlefilter_streams_v2 -x <x> -y <y> -z <z> -np <np> -nstream <nstream>
-Naive stream (which uses ./DD2360_Project/project/naive_stream/articlefilter_bisection  -x <x> -y <y> -z <z> -np <np> -nstream <nstream>
+Naive stream (which uses bisection ./DD2360_Project/project/naive_stream/particlefilter_bisection  -x <x> -y <y> -z <z> -np <np> -nstream <nstream>
